@@ -12,23 +12,33 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  // Efecto para hacer scroll al top automáticamente al montar el componente
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   
-  // Buscamos médicos que coincidan con la condición o mostramos los primeros como recomendados
-  const matchedDoctors = doctors.filter(doc => 
-    doc.tags.some(tag => 
-      result.condition.toLowerCase().includes(tag.toLowerCase()) ||
-      tag.toLowerCase().includes(result.condition.toLowerCase())
-    )
-  );
+  // Lógica de filtrado defensiva para evitar errores de undefined
+  const matchedDoctors = (doctors || []).filter(doc => {
+    if (!doc.tags || !Array.isArray(doc.tags)) return false;
+    const cond = (result?.condition || "").toLowerCase();
+    
+    return doc.tags.some(tag => {
+      if (!tag) return false;
+      const t = tag.toLowerCase();
+      return cond.includes(t) || t.includes(cond);
+    });
+  });
 
-  const recommendedDoctor = matchedDoctors.length > 0 ? matchedDoctors[0] : doctors[0];
+  const recommendedDoctor = matchedDoctors.length > 0 ? matchedDoctors[0] : (doctors[0] || {
+    name: "Especialista de Guardia",
+    specialty: "Reumatología General",
+    imageUrl: "https://via.placeholder.com/400?text=Doctor",
+    phone: "0000000000"
+  });
 
   const getWhatsAppLink = (doctor: Doctor) => {
-    const message = encodeURIComponent(`Hola, realicé el diagnóstico con IA en CERM CHECK. Resultados: Posible ${result.condition} (${result.urgency}). Deseo agendar cita con el ${doctor.name}.`);
+    const condName = result?.condition || "Consulta";
+    const urg = result?.urgency || "Media";
+    const message = encodeURIComponent(`Hola, realicé el diagnóstico con IA en CERM CHECK. Resultados: Posible ${condName} (${urg}). Deseo agendar cita con el ${doctor.name}.`);
     return `https://wa.me/${doctor.phone}?text=${message}`;
   };
 
@@ -55,15 +65,15 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                result.urgency === 'Alta' ? 'bg-red-500 text-white' : 'bg-white/20 text-white'
              }`}>
-               Prioridad {result.urgency}
+               Prioridad {result.urgency || "Media"}
              </span>
              <span className="text-white/60 text-[10px] font-bold uppercase tracking-[0.3em]">Resultado IA</span>
           </div>
           <h1 className="text-4xl sm:text-7xl font-bold serif-font mb-6 leading-tight tracking-tight">
-            {result.condition}
+            {result.condition || "Evaluación Clínica"}
           </h1>
           <p className="text-lg sm:text-2xl font-medium text-white/90 serif-font italic leading-relaxed border-l-4 border-white/30 pl-6">
-            "{result.summary}"
+            "{result.summary || "No se pudo generar un resumen detallado."}"
           </p>
         </div>
       </div>
@@ -74,7 +84,6 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
           <h2 className="text-mayo-blue font-bold uppercase text-[11px] tracking-[0.4em]">Especialista Recomendado para su Caso</h2>
         </div>
         <div className="p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 sm:gap-12">
-          {/* Foto del Médico - Asegurando visibilidad */}
           <div className="w-40 h-40 sm:w-56 sm:h-56 shrink-0 rounded-sm overflow-hidden shadow-lg border-4 border-white">
             <img 
               src={recommendedDoctor.imageUrl} 
@@ -139,7 +148,6 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
           <div className="fixed inset-0 bg-mayo-dark/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
           <div className="relative bg-white w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col rounded-sm">
-            {/* Header del Modal */}
             <div className="bg-mayo-blue p-6 sm:p-8 text-white">
               <div className="flex justify-between items-start">
                 <div className="flex items-center space-x-4">
@@ -159,7 +167,6 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
               </div>
             </div>
 
-            {/* Cuerpo del Calendario */}
             <div className="p-6 sm:p-8">
               <div className="mb-4 flex justify-between items-center border-b border-slate-100 pb-2">
                 <h4 className="text-sm font-bold text-mayo-dark uppercase tracking-widest">Marzo 2024</h4>

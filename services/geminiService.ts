@@ -13,9 +13,9 @@ declare global {
   }
 }
 
-// Configuración de optimización compartida
+// Configuración de optimización compartida para minimizar consumo de RPM/TPM
 const OPTIMIZED_CONFIG = {
-  maxOutputTokens: 300, 
+  maxOutputTokens: 350, 
   thinkingConfig: { thinkingBudget: 0 }, 
   temperature: 0.1, 
 };
@@ -67,10 +67,11 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-2.5-flash-preview-09-2025';
     
+    // Solo enviamos los mensajes más relevantes para ahorrar tokens
     const recentMessages = messages.slice(-10); 
     
     const content = [
-      { text: "Analiza este triaje médico brevemente:" },
+      { text: "Analiza este triaje médico brevemente y genera el diagnóstico probable:" },
       ...recentMessages.map(m => ({ text: `${m.role}: ${m.text}` })),
       { text: SUMMARY_PROMPT }
     ];
@@ -80,7 +81,7 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
       contents: [{ parts: content }],
       config: {
         ...OPTIMIZED_CONFIG,
-        maxOutputTokens: 200, 
+        maxOutputTokens: 250, 
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -95,13 +96,27 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
     });
 
     const text = response.text || '{}';
-    return JSON.parse(text) as TriageResult;
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.warn("JSON parse failed, attempting to clean text", text);
+      // Fallback simple si el JSON está mal formado
+      data = {};
+    }
+
+    // Aseguramos que el objeto retornado tenga todos los campos para evitar TypeErrors
+    return {
+      condition: data.condition || "Evaluación Clínica Pendiente",
+      summary: data.summary || "Se requiere una revisión presencial para confirmar los síntomas descritos.",
+      urgency: data.urgency || "Media"
+    };
   } catch (error) {
     handleApiError(error);
     return {
       condition: "Error de Evaluación",
-      summary: "No se pudo generar el resumen debido a un problema técnico.",
-      urgency: "Desconocida"
+      summary: "No se pudo generar el resumen debido a un problema técnico con el asistente.",
+      urgency: "Media"
     };
   }
 };
