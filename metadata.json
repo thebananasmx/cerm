@@ -1,0 +1,7 @@
+{
+  "name": "CERM CHECK - Diagnóstico con IA",
+  "description": "Una aplicación de salud inteligente que utiliza IA para realizar diagnósticos reumatológicos personalizados y conectar pacientes con especialistas.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
