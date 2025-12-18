@@ -2,122 +2,97 @@
 import React, { useState } from 'react';
 import { Disease, Doctor } from '../types';
 import { toastService } from '../services/toastService';
+import { firestoreService } from '../services/firebase';
 
 interface AdminPanelProps {
   diseases: Disease[];
   doctors: Doctor[];
-  onUpdateDiseases: (diseases: Disease[]) => void;
-  onUpdateDoctors: (doctors: Doctor[]) => void;
 }
 
-const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors, onUpdateDiseases, onUpdateDoctors }) => {
+const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
   const [activeTab, setActiveTab] = useState<'diseases' | 'doctors'>('diseases');
 
-  const addDisease = () => {
-    const name = prompt("Nombre de la enfermedad:");
+  const addDisease = async () => {
+    const name = prompt("Nombre de la patología:");
     if (!name) return;
-    const newDisease: Disease = {
-      id: Date.now().toString(),
-      name,
-      description: "Descripción diagnóstica",
-      symptoms: [],
-      urgency: 'Media'
-    };
-    onUpdateDiseases([...diseases, newDisease]);
-    toastService.success("Enfermedad añadida correctamente.");
+    try {
+      await firestoreService.saveItem("diseases", {
+        name,
+        description: "Evaluación automática por árbol de decisión.",
+        urgency: "Alta",
+        symptoms: []
+      });
+      toastService.success("Sincronizado con la nube.");
+    } catch (e) { toastService.error("Error al conectar con Firebase."); }
   };
 
-  const addDoctor = () => {
-    const name = prompt("Nombre del facultativo:");
+  const addDoctor = async () => {
+    const name = prompt("Nombre del Especialista:");
     if (!name) return;
-    const newDoctor: Doctor = {
-      id: Date.now().toString(),
-      name,
-      specialty: "Médico Especialista",
-      imageUrl: "https://picsum.photos/seed/newdoc/400/400",
-      phone: "0000000000",
-      tags: []
-    };
-    onUpdateDoctors([...doctors, newDoctor]);
-    toastService.success("Doctor añadido al directorio.");
+    try {
+      await firestoreService.saveItem("doctors", {
+        name,
+        specialty: "Reumatología Avanzada",
+        imageUrl: `https://i.pravatar.cc/150?u=${Math.random()}`,
+        phone: "34600000000",
+        tags: []
+      });
+      toastService.success("Doctor añadido globalmente.");
+    } catch (e) { toastService.error("Error de red."); }
   };
 
-  const deleteItem = (id: string, type: 'disease' | 'doctor') => {
-    if (confirm(`¿Confirma que desea eliminar este registro de ${type === 'disease' ? 'enfermedad' : 'doctor'}?`)) {
-      if (type === 'disease') onUpdateDiseases(diseases.filter(d => d.id !== id));
-      else onUpdateDoctors(doctors.filter(d => d.id !== id));
-      toastService.info("Registro eliminado.");
+  const deleteItem = async (id: string, col: string) => {
+    if (confirm("¿Eliminar este registro de la base de datos central?")) {
+      await firestoreService.removeItem(col, id);
+      toastService.info("Registro eliminado de Firebase.");
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 sm:py-16">
-      <div className="mb-4 sm:mb-12">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-mayo-blue uppercase tracking-tight">Administración</h2>
-        <div className="h-1 w-16 sm:w-24 bg-mayo-accent mt-1 sm:mt-2"></div>
+    <div className="max-w-7xl mx-auto px-6 py-16">
+      <div className="flex items-center justify-between mb-12">
+        <h2 className="text-3xl font-bold text-mayo-dark serif-font">Configuración del SaaS</h2>
+        <div className="flex gap-4">
+          <button onClick={() => setActiveTab('diseases')} className={`px-6 py-2 rounded-full text-xs font-bold uppercase transition-all ${activeTab === 'diseases' ? 'bg-mayo-blue text-white' : 'bg-white text-mayo-slate border border-mayo-border'}`}>Patologías</button>
+          <button onClick={() => setActiveTab('doctors')} className={`px-6 py-2 rounded-full text-xs font-bold uppercase transition-all ${activeTab === 'doctors' ? 'bg-mayo-blue text-white' : 'bg-white text-mayo-slate border border-mayo-border'}`}>Doctores</button>
+        </div>
       </div>
 
-      <div className="flex border-b border-slate-200 mb-4 sm:mb-8 overflow-x-auto -mx-4 px-4 scrollbar-hide">
-        <button 
-          onClick={() => setActiveTab('diseases')}
-          className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${activeTab === 'diseases' ? 'border-mayo-blue text-mayo-blue bg-mayo-light' : 'border-transparent text-mayo-slate'}`}
-        >
-          Conocimientos
-        </button>
-        <button 
-          onClick={() => setActiveTab('doctors')}
-          className={`px-4 sm:px-8 py-3 sm:py-4 text-[10px] sm:text-sm font-bold uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${activeTab === 'doctors' ? 'border-mayo-blue text-mayo-blue bg-mayo-light' : 'border-transparent text-mayo-slate'}`}
-        >
-          Directorio
-        </button>
-      </div>
-
-      <div className="bg-white border border-slate-200 shadow-sm overflow-hidden rounded-sm">
-        <div className="p-4 sm:p-6 bg-[#fcfcfc] border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
-          <h3 className="font-bold text-mayo-blue uppercase text-[11px] sm:text-sm tracking-widest">
-            {activeTab === 'diseases' ? 'Patologías' : 'Sanitarios'}
-          </h3>
-          <button 
-            onClick={activeTab === 'diseases' ? addDisease : addDoctor} 
-            className="w-full sm:w-auto bg-mayo-blue text-white px-5 py-2 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-widest hover:bg-mayo-dark shadow-sm transition-colors"
-          >
-            {activeTab === 'diseases' ? '+ Patología' : '+ Doctor'}
-          </button>
+      <div className="bg-white border border-mayo-border rounded-[2rem] overflow-hidden shadow-glass">
+        <div className="p-8 border-b border-mayo-border flex justify-between items-center bg-mayo-surface/30">
+          <p className="text-xs font-bold text-mayo-blue uppercase tracking-widest">Base de datos Firestore Activa</p>
+          <button onClick={activeTab === 'diseases' ? addDisease : addDoctor} className="bg-mayo-dark text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-mayo-blue transition-all">+ Nuevo Registro</button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[500px] sm:min-w-0">
-            <thead className="bg-[#f7f8f9] text-mayo-slate text-[9px] sm:text-[11px] font-bold uppercase tracking-widest">
-              <tr>
-                <th className="px-4 sm:px-8 py-3 sm:py-4">{activeTab === 'diseases' ? 'Nombre' : 'Facultativo'}</th>
-                <th className="px-4 sm:px-8 py-3 sm:py-4">{activeTab === 'diseases' ? 'Urgencia' : 'Especialidad'}</th>
-                <th className="px-4 sm:px-8 py-3 sm:py-4 text-right">Acciones</th>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-mayo-light text-mayo-slate text-[10px] font-black uppercase tracking-widest">
+                <th className="px-10 py-5">Nombre / Registro</th>
+                <th className="px-10 py-5">Estado Cloud</th>
+                <th className="px-10 py-5 text-right">Control</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-mayo-border">
               {activeTab === 'diseases' ? diseases.map(d => (
-                <tr key={d.id} className="hover:bg-mayo-light/30 transition-colors">
-                  <td className="px-4 sm:px-8 py-3 font-semibold text-slate-800 text-sm sm:text-base">{d.name}</td>
-                  <td className="px-4 sm:px-8 py-3">
-                    <span className={`px-2 py-0.5 text-[8px] sm:text-[10px] font-bold uppercase rounded-sm ${d.urgency === 'Alta' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                      {d.urgency}
-                    </span>
+                <tr key={d.id} className="hover:bg-mayo-surface/50 transition-colors">
+                  <td className="px-10 py-6 font-bold text-mayo-dark">{d.name}</td>
+                  <td className="px-10 py-6">
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[9px] font-black uppercase">Sincronizado</span>
                   </td>
-                  <td className="px-4 sm:px-8 py-3 text-right">
-                    <button onClick={() => deleteItem(d.id, 'disease')} className="text-red-600 hover:text-red-800 text-[10px] sm:text-xs font-bold uppercase underline">Eliminar</button>
+                  <td className="px-10 py-6 text-right">
+                    <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-500 font-black text-[10px] uppercase hover:underline">Borrar</button>
                   </td>
                 </tr>
               )) : doctors.map(doc => (
-                <tr key={doc.id} className="hover:bg-mayo-light/30 transition-colors">
-                  <td className="px-4 sm:px-8 py-3 flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-slate-100 rounded-sm overflow-hidden border border-slate-200 shrink-0">
-                      <img src={doc.imageUrl} className="w-full h-full object-cover" alt="" />
-                    </div>
-                    <span className="font-semibold text-slate-800 text-sm sm:text-base truncate">{doc.name}</span>
+                <tr key={doc.id} className="hover:bg-mayo-surface/50 transition-colors">
+                  <td className="px-10 py-6 flex items-center gap-4">
+                    <img src={doc.imageUrl} className="w-10 h-10 rounded-full object-cover" alt="" />
+                    <span className="font-bold text-mayo-dark">{doc.name}</span>
                   </td>
-                  <td className="px-4 sm:px-8 py-3 text-mayo-slate text-[10px] sm:text-sm font-medium">{doc.specialty}</td>
-                  <td className="px-4 sm:px-8 py-3 text-right">
-                    <button onClick={() => deleteItem(doc.id, 'doctor')} className="text-red-600 hover:text-red-800 text-[10px] sm:text-xs font-bold uppercase underline">Eliminar</button>
+                  <td className="px-10 py-6 font-medium text-mayo-slate text-sm">{doc.specialty}</td>
+                  <td className="px-10 py-6 text-right">
+                    <button onClick={() => deleteItem(doc.id, "doctors")} className="text-red-500 font-black text-[10px] uppercase hover:underline">Borrar</button>
                   </td>
                 </tr>
               ))}
