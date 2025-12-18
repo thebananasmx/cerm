@@ -4,6 +4,7 @@ export interface Disease {
   name: string;
   description: string;
   symptoms: string[];
+  keywords: string[]; // Palabras clave para el algoritmo de matching
   urgency: 'Baja' | 'Media' | 'Alta';
 }
 
@@ -13,7 +14,7 @@ export interface Doctor {
   specialty: string;
   imageUrl: string;
   phone: string;
-  tags: string[]; // Match with disease names or categories
+  tags: string[]; 
 }
 
 export interface Message {
@@ -25,6 +26,7 @@ export interface TriageResult {
   condition: string;
   summary: string;
   urgency: string;
+  score?: number;
 }
 
 export type AppView = 'landing' | 'chat' | 'results' | 'admin';

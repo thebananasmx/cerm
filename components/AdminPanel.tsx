@@ -14,15 +14,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Form States
   const [formData, setFormData] = useState({
     name: '',
-    extra: '', // Specialty for doctors, urgency for diseases
-    phone: ''  // Only for doctors
+    extra: '', 
+    phone: '',
+    keywords: '' // Nuevo campo para keywords en el form
   });
 
   const resetForm = () => {
-    setFormData({ name: '', extra: '', phone: '' });
+    setFormData({ name: '', extra: '', phone: '', keywords: '' });
     setShowForm(false);
     setIsSubmitting(false);
   };
@@ -37,19 +37,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
     setIsSubmitting(true);
     try {
       if (activeTab === 'diseases') {
+        const keywordsArray = formData.keywords.split(',').map(k => k.trim()).filter(k => k !== '');
         await firestoreService.saveItem("diseases", {
           name: formData.name,
-          description: "Evaluación automática por árbol de decisión.",
+          description: "Sincronizado desde el panel de administración.",
           urgency: formData.extra || "Alta",
-          symptoms: []
+          symptoms: keywordsArray,
+          keywords: keywordsArray
         });
       } else {
         await firestoreService.saveItem("doctors", {
           name: formData.name,
           specialty: formData.extra || "Reumatología Avanzada",
           imageUrl: `https://i.pravatar.cc/150?u=${Math.random()}`,
-          phone: formData.phone || "34600000000",
-          tags: []
+          phone: formData.phone || "5550000000",
+          tags: [formData.extra]
         });
       }
       toastService.success("Sincronizado con Firebase correctamente.");
@@ -95,12 +97,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
         </div>
       </div>
 
-      {/* Inline Form Card */}
       {showForm && (
         <div className="mb-8 animate-in slide-in-from-top-4 duration-300">
           <form onSubmit={handleSave} className="bg-mayo-dark text-white p-8 rounded-[2rem] shadow-premium">
             <h3 className="text-lg font-bold serif-font mb-6">Nuevo {activeTab === 'diseases' ? 'Diagnóstico' : 'Especialista'}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Nombre Completo</label>
                 <input 
@@ -136,6 +137,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                   />
                 )}
               </div>
+              
+              {activeTab === 'diseases' && (
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Síntomas / Keywords (Separados por coma)</label>
+                  <textarea 
+                    value={formData.keywords}
+                    onChange={(e) => setFormData({...formData, keywords: e.target.value})}
+                    placeholder="Ej: Manos, Rigidez, Fatiga, Manchas rojas"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors h-24"
+                  />
+                  <p className="text-[9px] text-white/40">Estas palabras se usarán para emparejar las respuestas del chat con este diagnóstico.</p>
+                </div>
+              )}
+
               {activeTab === 'doctors' && (
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">WhatsApp (Sin +)</label>
@@ -184,7 +199,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
             <thead>
               <tr className="bg-mayo-light text-mayo-slate text-[10px] font-black uppercase tracking-widest">
                 <th className="px-10 py-5">Nombre / Registro</th>
-                <th className="px-10 py-5">Estado Cloud</th>
+                <th className="px-10 py-5">Keywords IA</th>
                 <th className="px-10 py-5 text-right">Control</th>
               </tr>
             </thead>
@@ -197,14 +212,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                       <div className="text-[10px] text-mayo-slate uppercase font-medium">Urgencia: {d.urgency}</div>
                     </td>
                     <td className="px-10 py-6">
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">Sincronizado</span>
+                      <div className="flex flex-wrap gap-1">
+                        {d.keywords?.slice(0, 3).map((k, i) => (
+                          <span key={i} className="bg-mayo-blue/10 text-mayo-accent px-2 py-0.5 rounded text-[8px] font-bold uppercase">{k}</span>
+                        ))}
+                        {d.keywords?.length > 3 && <span className="text-[8px] text-mayo-slate font-bold">+{d.keywords.length - 3}</span>}
+                      </div>
                     </td>
                     <td className="px-10 py-6 text-right">
                       <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
                     </td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay patologías registradas en Firestore.</td></tr>
+                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay patologías registradas.</td></tr>
                 )
               ) : (
                 doctors.length > 0 ? doctors.map(doc => (
@@ -224,7 +244,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                     </td>
                   </tr>
                 )) : (
-                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay doctores registrados en Firestore.</td></tr>
+                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay doctores registrados.</td></tr>
                 )
               )}
             </tbody>

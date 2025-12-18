@@ -5,29 +5,33 @@ export const INITIAL_DISEASES: Disease[] = [
   {
     id: '1',
     name: 'Artritis Reumatoide',
-    description: 'Enfermedad inflamatoria sistémica autoinmune, caracterizada por una inflamación persistente de las articulaciones.',
+    description: 'Enfermedad inflamatoria sistémica autoinmune.',
     symptoms: ['Rigidez matutina', 'Dolor simétrico', 'Hinchazón articular'],
+    keywords: ['Manos', 'Muñecas', 'Más de 1 hora', 'Simétrico', 'Gradual'],
     urgency: 'Alta'
   },
   {
     id: '2',
     name: 'Lupus Eritematoso',
-    description: 'Enfermedad autoinmune compleja que puede afectar las articulaciones, la piel, los riñones y otros órganos.',
+    description: 'Enfermedad autoinmune compleja que afecta múltiples órganos.',
     symptoms: ['Fatiga', 'Erupciones cutáneas', 'Dolor articular'],
+    keywords: ['Piel', 'Fatiga y manchas rojas', 'Fiebre', 'Cara', 'Fotosensibilidad'],
     urgency: 'Alta'
   },
   {
     id: '3',
     name: 'Fibromialgia',
-    description: 'Afección crónica que causa dolor en todo el cuerpo, fatiga y otros síntomas.',
+    description: 'Afección crónica que causa dolor generalizado y fatiga.',
     symptoms: ['Dolor generalizado', 'Puntos sensibles', 'Trastornos del sueño'],
+    keywords: ['Dolor Generalizado', 'Todo el día', 'Sueño', 'Fatiga'],
     urgency: 'Media'
   },
   {
     id: '4',
     name: 'Gota',
-    description: 'Forma común y dolorosa de artritis que afecta con frecuencia a la articulación de la base del dedo gordo del pie.',
-    symptoms: ['Dolor intenso súbito', 'Enrojecimiento', 'Calor en la articulación'],
+    description: 'Forma dolorosa de artritis por acumulación de ácido úrico.',
+    symptoms: ['Dolor intenso súbito', 'Enrojecimiento', 'Calor'],
+    keywords: ['Rodillas o Tobillos', 'Súbito e intenso', 'Rojo', 'Calor'],
     urgency: 'Alta'
   }
 ];
