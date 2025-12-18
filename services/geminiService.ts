@@ -3,17 +3,18 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_PROMPT, SUMMARY_PROMPT } from "../constants";
 import { Message, TriageResult } from "../types";
 
-// Declarar process para evitar errores de compilación TS en entornos de navegador/Vite
-declare const process: {
-  env: {
-    API_KEY: string;
-  };
-};
-
-// Inicialización directa según directrices
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Definición global para evitar errores TS2580 en el build
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      API_KEY: string;
+    }
+  }
+}
 
 export const startTriageChat = () => {
+  // Always create a new GoogleGenAI instance right before making an API call.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   return ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
@@ -37,6 +38,8 @@ export const startTriageChat = () => {
 };
 
 export const getTriageSummary = async (messages: Message[]): Promise<TriageResult> => {
+  // Always create a new GoogleGenAI instance right before making an API call.
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-flash-preview';
   
   const content = [
@@ -63,7 +66,9 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
   });
 
   try {
-    return JSON.parse(response.text || '{}') as TriageResult;
+    // Directly access the .text property from GenerateContentResponse
+    const text = response.text || '{}';
+    return JSON.parse(text) as TriageResult;
   } catch (e) {
     console.error("Error parsing summary JSON", e);
     return {

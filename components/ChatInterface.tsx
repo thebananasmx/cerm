@@ -28,12 +28,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
       chatInstance.current = startTriageChat();
       try {
         const response = await chatInstance.current.sendMessage({ message: "Iniciando diagnóstico médico asistido por IA." });
-        const data = JSON.parse(response.text) as AIResponse;
+        // The text property returns the string output. Do not use response.text()
+        const text = response.text || '{}';
+        const data = JSON.parse(text) as AIResponse;
         
-        setOptions(data.options);
-        setMessages([{ role: 'model', text: data.question }]);
+        setOptions(data.options || []);
+        const initialMsg: Message = { role: 'model', text: data.question || "Hola, soy tu asistente médico de IA. ¿Cómo puedo ayudarte hoy?" };
+        setMessages([initialMsg]);
       } catch (err) {
-        console.error(err);
+        console.error("Error initializing chat:", err);
       } finally {
         setIsTyping(false);
       }
@@ -56,21 +59,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
 
     try {
       const response = await chatInstance.current.sendMessage({ message: option });
-      const data = JSON.parse(response.text) as AIResponse;
+      // The text property returns the string output. Do not use response.text()
+      const text = response.text || '{}';
+      const data = JSON.parse(text) as AIResponse;
 
       if (data.complete || questionCount >= 6) {
-        const modelMsg: Message = { role: 'model', text: data.question };
+        const modelMsg: Message = { role: 'model', text: data.question || "Finalizando entrevista..." };
         const allMessages: Message[] = [...messages, userMsg, modelMsg];
         const summary = await getTriageSummary(allMessages);
         onComplete(summary, allMessages);
       } else {
-        const modelMsg: Message = { role: 'model', text: data.question };
+        const modelMsg: Message = { role: 'model', text: data.question || "¿Puede darme más detalles?" };
         setMessages(prev => [...prev, modelMsg]);
-        setOptions(data.options);
+        setOptions(data.options || []);
         setQuestionCount(prev => prev + 1);
       }
     } catch (error) {
-      console.error("Chat error", error);
+      console.error("Chat error:", error);
     } finally {
       setIsTyping(false);
     }
@@ -78,7 +83,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4 sm:py-16 min-h-[calc(100vh-80px)] flex flex-col">
-      {/* Small navigation text */}
       <div className="mb-2 sm:mb-6 flex items-center text-mayo-dark font-bold uppercase text-[10px] sm:text-[12px] tracking-[0.2em] cursor-pointer group hover:text-mayo-blue" onClick={() => window.location.reload()}>
         <svg className="w-3 h-3 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
@@ -86,7 +90,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
         Diagnóstico con IA
       </div>
 
-      {/* Primary Blue Header */}
       <div className="bg-mayo-blue text-white px-6 sm:px-8 py-3 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-20 shadow-lg rounded-sm">
         <h2 className="text-lg sm:text-2xl font-bold serif-font">Evaluación de síntomas</h2>
         <div className="flex items-center space-x-3 sm:space-x-4 text-white/90 uppercase text-[9px] sm:text-[11px] font-bold tracking-[0.2em] mt-1 sm:mt-0">
@@ -100,7 +103,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
       </div>
 
       <div className="flex-grow flex flex-col">
-        {/* Chat Content - Dark Text focus */}
         <div ref={scrollRef} className="space-y-6 sm:space-y-16 mb-8 sm:mb-20 flex-grow">
           {messages.map((msg, idx) => {
             const isLast = idx === messages.length - 1;
@@ -137,7 +139,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
           )}
         </div>
 
-        {/* Action Selection - Solid Blue Pill Buttons */}
         {!isTyping && options.length > 0 && (
           <div className="mt-auto pt-4 sm:pt-12 border-t border-slate-100">
             <h3 className="text-[10px] sm:text-[12px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-3 sm:mb-10">Seleccione su respuesta:</h3>
