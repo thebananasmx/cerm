@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Message, Disease, TriageResult } from '../types';
-import { startTriageChat, getTriageSummary } from '../services/geminiService';
+import { startTriageChat, getTriageSummary, safeParseJSON } from '../services/geminiService';
 
 interface ChatInterfaceProps {
   onComplete: (result: TriageResult, history: Message[]) => void;
@@ -28,8 +28,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
       chatInstance.current = startTriageChat();
       try {
         const response = await chatInstance.current.sendMessage({ message: "Iniciando diagnóstico médico asistido por IA." });
-        const text = response.text || '{}';
-        const data = JSON.parse(text) as AIResponse;
+        const data = safeParseJSON(response.text) as AIResponse;
         
         setOptions(data.options || []);
         const initialMsg: Message = { role: 'model', text: data.question || "Para comenzar, ¿en qué zona específica siente mayor malestar articular?" };
@@ -69,8 +68,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
       }
 
       const response = await chatInstance.current.sendMessage({ message: option });
-      const text = response.text || '{}';
-      const data = JSON.parse(text) as AIResponse;
+      const data = safeParseJSON(response.text) as AIResponse;
 
       const modelMsg: Message = { role: 'model', text: data.question || "¿Presenta rigidez persistente al despertar?" };
       setMessages(prev => [...prev, modelMsg]);
@@ -101,7 +99,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
               <div key={i} className={`h-1.5 w-6 sm:w-10 rounded-full transition-all duration-700 ${i <= questionCount ? 'bg-mayo-blue' : 'bg-mayo-border'}`}></div>
             ))}
           </div>
-          <span className="text-[10px] font-black text-mayo-dark/40 uppercase">{questionCount + 1}/6</span>
+          <span className="text-[10px] font-black text-mayo-dark/40 uppercase">{Math.min(questionCount + 1, 6)}/6</span>
         </div>
       </div>
 

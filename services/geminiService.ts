@@ -13,9 +13,32 @@ declare global {
   }
 }
 
-// Configuración de optimización compartida para minimizar consumo de RPM/TPM
+// Utilidad para limpiar y parsear JSON de forma robusta
+export const safeParseJSON = (text: string) => {
+  if (!text) return {};
+  try {
+    // 1. Eliminar bloques de código markdown si existen
+    let cleaned = text.replace(/```json\n?|```/g, '').trim();
+    
+    // 2. Intentar parseo directo
+    return JSON.parse(cleaned);
+  } catch (e) {
+    try {
+      // 3. Intento de rescate: eliminar comas finales comunes que rompen JSON.parse
+      let rescued = text
+        .replace(/```json\n?|```/g, '')
+        .replace(/,\s*([\]}])/g, '$1') 
+        .trim();
+      return JSON.parse(rescued);
+    } catch (e2) {
+      console.error("Error crítico de parseo JSON:", text);
+      throw new Error("La respuesta del asistente no tiene un formato válido.");
+    }
+  }
+};
+
 const OPTIMIZED_CONFIG = {
-  maxOutputTokens: 350, 
+  maxOutputTokens: 500, 
   thinkingConfig: { thinkingBudget: 0 }, 
   temperature: 0.1, 
 };
@@ -25,11 +48,11 @@ const handleApiError = (error: any) => {
   const errorMessage = error?.message || "";
   
   if (errorMessage.includes("429") || errorMessage.toLowerCase().includes("quota")) {
-    toastService.error("Límite de frecuencia excedido. Por favor, espere un minuto antes de continuar.");
+    toastService.error("Límite de frecuencia excedido. Por favor, espere un minuto.");
   } else if (errorMessage.includes("API_KEY_INVALID")) {
-    toastService.error("Error de configuración: Clave de API inválida.");
+    toastService.error("Error: Clave de API inválida.");
   } else {
-    toastService.error("Error de conexión con el asistente de IA. Intente de nuevo.");
+    toastService.error("Error de conexión con la IA.");
   }
   throw error;
 };
@@ -67,11 +90,10 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const model = 'gemini-2.5-flash-preview-09-2025';
     
-    // Solo enviamos los mensajes más relevantes para ahorrar tokens
-    const recentMessages = messages.slice(-10); 
+    const recentMessages = messages.slice(-12); 
     
     const content = [
-      { text: "Analiza este triaje médico brevemente y genera el diagnóstico probable:" },
+      { text: "Genera el diagnóstico probable basado en esta conversación:" },
       ...recentMessages.map(m => ({ text: `${m.role}: ${m.text}` })),
       { text: SUMMARY_PROMPT }
     ];
@@ -81,7 +103,6 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
       contents: [{ parts: content }],
       config: {
         ...OPTIMIZED_CONFIG,
-        maxOutputTokens: 250, 
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
@@ -95,27 +116,18 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
       }
     });
 
-    const text = response.text || '{}';
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      console.warn("JSON parse failed, attempting to clean text", text);
-      // Fallback simple si el JSON está mal formado
-      data = {};
-    }
+    const data = safeParseJSON(response.text);
 
-    // Aseguramos que el objeto retornado tenga todos los campos para evitar TypeErrors
     return {
       condition: data.condition || "Evaluación Clínica Pendiente",
-      summary: data.summary || "Se requiere una revisión presencial para confirmar los síntomas descritos.",
+      summary: data.summary || "Se requiere revisión presencial para confirmar síntomas.",
       urgency: data.urgency || "Media"
     };
   } catch (error) {
     handleApiError(error);
     return {
       condition: "Error de Evaluación",
-      summary: "No se pudo generar el resumen debido a un problema técnico con el asistente.",
+      summary: "No se pudo generar el resumen debido a un problema de formato en la respuesta.",
       urgency: "Media"
     };
   }
