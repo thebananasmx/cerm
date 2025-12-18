@@ -18,7 +18,7 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
         </p>
         <button
           onClick={onStart}
-          className="w-full sm:w-auto bg-mayo-blue text-white px-10 sm:px-14 py-4 sm:py-5 text-lg sm:text-xl font-bold uppercase tracking-[0.2em] hover:bg-mayo-dark transition-all shadow-lg rounded-sm"
+          className="mayo-btn-pill w-full sm:w-auto bg-mayo-blue text-white px-10 sm:px-14 py-4 sm:py-5 text-lg sm:text-xl font-bold uppercase tracking-[0.2em] hover:bg-mayo-dark transition-all shadow-lg"
         >
           Iniciar Evaluación de IA
         </button>
