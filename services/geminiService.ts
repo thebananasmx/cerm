@@ -2,6 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_PROMPT, SUMMARY_PROMPT } from "../constants";
 import { Message, TriageResult } from "../types";
+import { toastService } from "./toastService";
 
 // Definición global para evitar errores TS2580 en el build
 declare global {
@@ -14,76 +15,93 @@ declare global {
 
 // Configuración de optimización compartida
 const OPTIMIZED_CONFIG = {
-  maxOutputTokens: 300, // Limita el consumo de TPM (Tokens por minuto)
-  thinkingConfig: { thinkingBudget: 0 }, // Ahorra procesamiento y latencia
-  temperature: 0.1, // Mayor determinación, menos tokens desperdiciados en variaciones
+  maxOutputTokens: 300, 
+  thinkingConfig: { thinkingBudget: 0 }, 
+  temperature: 0.1, 
+};
+
+const handleApiError = (error: any) => {
+  console.error("Gemini API Error:", error);
+  const errorMessage = error?.message || "";
+  
+  if (errorMessage.includes("429") || errorMessage.toLowerCase().includes("quota")) {
+    toastService.error("Límite de frecuencia excedido. Por favor, espere un minuto antes de continuar.");
+  } else if (errorMessage.includes("API_KEY_INVALID")) {
+    toastService.error("Error de configuración: Clave de API inválida.");
+  } else {
+    toastService.error("Error de conexión con el asistente de IA. Intente de nuevo.");
+  }
+  throw error;
 };
 
 export const startTriageChat = () => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  return ai.chats.create({
-    model: 'gemini-2.5-flash-preview-09-2025',
-    config: {
-      ...OPTIMIZED_CONFIG,
-      systemInstruction: SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          question: { type: Type.STRING },
-          options: { 
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return ai.chats.create({
+      model: 'gemini-2.5-flash-preview-09-2025',
+      config: {
+        ...OPTIMIZED_CONFIG,
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            question: { type: Type.STRING },
+            options: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
+            },
+            complete: { type: Type.BOOLEAN }
           },
-          complete: { type: Type.BOOLEAN }
-        },
-        required: ["question", "options", "complete"]
-      }
-    },
-  });
+          required: ["question", "options", "complete"]
+        }
+      },
+    });
+  } catch (error) {
+    return handleApiError(error);
+  }
 };
 
 export const getTriageSummary = async (messages: Message[]): Promise<TriageResult> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const model = 'gemini-2.5-flash-preview-09-2025';
-  
-  // Optimizamos el contenido enviado: solo los últimos mensajes si el historial es muy largo
-  const recentMessages = messages.slice(-10); 
-  
-  const content = [
-    { text: "Analiza este triaje médico brevemente:" },
-    ...recentMessages.map(m => ({ text: `${m.role}: ${m.text}` })),
-    { text: SUMMARY_PROMPT }
-  ];
-
-  const response = await ai.models.generateContent({
-    model,
-    contents: [{ parts: content }],
-    config: {
-      ...OPTIMIZED_CONFIG,
-      maxOutputTokens: 200, // El resumen debe ser muy conciso
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          condition: { type: Type.STRING },
-          summary: { type: Type.STRING },
-          urgency: { type: Type.STRING },
-        },
-        required: ["condition", "summary", "urgency"],
-      }
-    }
-  });
-
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const model = 'gemini-2.5-flash-preview-09-2025';
+    
+    const recentMessages = messages.slice(-10); 
+    
+    const content = [
+      { text: "Analiza este triaje médico brevemente:" },
+      ...recentMessages.map(m => ({ text: `${m.role}: ${m.text}` })),
+      { text: SUMMARY_PROMPT }
+    ];
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{ parts: content }],
+      config: {
+        ...OPTIMIZED_CONFIG,
+        maxOutputTokens: 200, 
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            condition: { type: Type.STRING },
+            summary: { type: Type.STRING },
+            urgency: { type: Type.STRING },
+          },
+          required: ["condition", "summary", "urgency"],
+        }
+      }
+    });
+
     const text = response.text || '{}';
     return JSON.parse(text) as TriageResult;
-  } catch (e) {
-    console.error("Error parsing summary JSON", e);
+  } catch (error) {
+    handleApiError(error);
     return {
-      condition: "Evaluación General",
-      summary: "Se requiere revisión por un especialista para determinar el cuadro clínico.",
-      urgency: "Media"
+      condition: "Error de Evaluación",
+      summary: "No se pudo generar el resumen debido a un problema técnico.",
+      urgency: "Desconocida"
     };
   }
 };

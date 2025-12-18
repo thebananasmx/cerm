@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Disease, Doctor } from '../types';
+import { toastService } from '../services/toastService';
 
 interface AdminPanelProps {
   diseases: Disease[];
@@ -23,6 +24,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors, onUpdateDise
       urgency: 'Media'
     };
     onUpdateDiseases([...diseases, newDisease]);
+    toastService.success("Enfermedad añadida correctamente.");
   };
 
   const addDoctor = () => {
@@ -37,12 +39,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors, onUpdateDise
       tags: []
     };
     onUpdateDoctors([...doctors, newDoctor]);
+    toastService.success("Doctor añadido al directorio.");
   };
 
   const deleteItem = (id: string, type: 'disease' | 'doctor') => {
     if (confirm(`¿Confirma que desea eliminar este registro de ${type === 'disease' ? 'enfermedad' : 'doctor'}?`)) {
       if (type === 'disease') onUpdateDiseases(diseases.filter(d => d.id !== id));
       else onUpdateDoctors(doctors.filter(d => d.id !== id));
+      toastService.info("Registro eliminado.");
     }
   };
 

@@ -6,6 +6,7 @@ import Hero from './components/Hero';
 import ChatInterface from './components/ChatInterface';
 import ResultsCard from './components/ResultsCard';
 import AdminPanel from './components/AdminPanel';
+import ToastContainer from './components/ToastContainer';
 
 const App: React.FC = () => {
   const [view, setView] = useState<AppView>('landing');
@@ -53,7 +54,9 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Global Header - Inspired by Screenshot 1 & 2 */}
+      <ToastContainer />
+      
+      {/* Global Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
           {/* Logo Brand */}

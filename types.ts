@@ -28,3 +28,11 @@ export interface TriageResult {
 }
 
 export type AppView = 'landing' | 'chat' | 'results' | 'admin';
+
+export type ToastType = 'success' | 'error' | 'info';
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: ToastType;
+}
