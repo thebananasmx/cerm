@@ -12,14 +12,20 @@ declare global {
   }
 }
 
+// Configuración de optimización compartida
+const OPTIMIZED_CONFIG = {
+  maxOutputTokens: 300, // Limita el consumo de TPM (Tokens por minuto)
+  thinkingConfig: { thinkingBudget: 0 }, // Ahorra procesamiento y latencia
+  temperature: 0.1, // Mayor determinación, menos tokens desperdiciados en variaciones
+};
+
 export const startTriageChat = () => {
-  // Always create a new GoogleGenAI instance right before making an API call.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   return ai.chats.create({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-2.5-flash-preview-09-2025',
     config: {
+      ...OPTIMIZED_CONFIG,
       systemInstruction: SYSTEM_PROMPT,
-      temperature: 0.2,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -38,13 +44,15 @@ export const startTriageChat = () => {
 };
 
 export const getTriageSummary = async (messages: Message[]): Promise<TriageResult> => {
-  // Always create a new GoogleGenAI instance right before making an API call.
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const model = 'gemini-3-flash-preview';
+  const model = 'gemini-2.5-flash-preview-09-2025';
+  
+  // Optimizamos el contenido enviado: solo los últimos mensajes si el historial es muy largo
+  const recentMessages = messages.slice(-10); 
   
   const content = [
-    { text: "Historial de conversación:" },
-    ...messages.map(m => ({ text: `${m.role}: ${m.text}` })),
+    { text: "Analiza este triaje médico brevemente:" },
+    ...recentMessages.map(m => ({ text: `${m.role}: ${m.text}` })),
     { text: SUMMARY_PROMPT }
   ];
 
@@ -52,6 +60,8 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
     model,
     contents: [{ parts: content }],
     config: {
+      ...OPTIMIZED_CONFIG,
+      maxOutputTokens: 200, // El resumen debe ser muy conciso
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -66,7 +76,6 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
   });
 
   try {
-    // Directly access the .text property from GenerateContentResponse
     const text = response.text || '{}';
     return JSON.parse(text) as TriageResult;
   } catch (e) {
