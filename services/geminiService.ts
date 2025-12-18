@@ -3,7 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_PROMPT, SUMMARY_PROMPT } from "../constants";
 import { Message, TriageResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Inicialización directa según directrices
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const startTriageChat = () => {
   return ai.chats.create({
