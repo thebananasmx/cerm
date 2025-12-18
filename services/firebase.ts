@@ -1,5 +1,5 @@
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { 
   getFirestore, 
   collection, 
@@ -9,10 +9,10 @@ import {
   onSnapshot,
   QuerySnapshot,
   DocumentData,
-  QueryDocumentSnapshot
+  QueryDocumentSnapshot,
+  Firestore
 } from "firebase/firestore";
 
-// NOTA: Para producción, estas credenciales deben ser variables de entorno.
 const firebaseConfig = {
   apiKey: "AIzaSyCzzRBzN_1wAMeeI1aNSfURB667vhUdK3Q",
   authDomain: "cerm-check-ia.firebaseapp.com",
@@ -23,8 +23,16 @@ const firebaseConfig = {
   measurementId: "G-4XRTQD3M5G"
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+// Inicialización defensiva de la App
+let app: FirebaseApp;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
+
+// Inicialización de Firestore
+export const db: Firestore = getFirestore(app);
 
 export const firestoreService = {
   // Patologías
