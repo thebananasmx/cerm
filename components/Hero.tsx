@@ -7,53 +7,60 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ onStart }) => {
   return (
-    <div className="bg-white">
-      {/* Top Banner Area */}
-      <div className="bg-white border-b border-slate-100 py-8 sm:py-28 text-center px-6">
-        <h1 className="text-4xl sm:text-7xl font-bold text-mayo-dark tracking-tight mb-3 sm:mb-6 serif-font leading-tight">
-          Respuestas para su salud <span className="text-mayo-blue">reumatológica</span>
-        </h1>
-        <p className="text-lg sm:text-2xl text-mayo-dark/80 max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-10 font-light">
-          Obtenga claridad clínica hoy mismo. Nuestra evaluación inteligente analiza sus síntomas articulares y le conecta con el cuidado experto de forma inmediata.
-        </p>
-        <button
-          onClick={onStart}
-          className="mayo-btn-pill w-full sm:w-auto bg-mayo-blue text-mayo-dark px-10 sm:px-14 py-4 sm:py-5 text-lg sm:text-xl font-bold uppercase tracking-[0.2em] hover:bg-mayo-accent transition-all shadow-lg"
-        >
-          Iniciar Evaluación de IA
-        </button>
+    <div className="relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-mayo-blue/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-mayo-dark/5 rounded-full blur-[100px]"></div>
       </div>
 
-      {/* Grid Menu - Solid Color Blocks */}
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:py-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 bg-slate-100 border border-slate-100">
-          <button onClick={onStart} className="bg-mayo-blue hover:bg-mayo-accent text-mayo-dark p-8 sm:p-12 text-left flex flex-col justify-between h-56 sm:h-80 transition-all cursor-pointer group">
-            <svg className="w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-xl sm:text-2xl font-bold leading-tight serif-font">Pedir una consulta IA</span>
+      <div className="max-w-7xl mx-auto px-6 py-20 sm:py-32 text-center">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-mayo-blue/10 border border-mayo-blue/20 rounded-full mb-8">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mayo-blue opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-mayo-blue"></span>
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-mayo-accent">Nueva Generación de Diagnóstico IA</span>
+        </div>
+
+        <h1 className="text-5xl sm:text-8xl font-bold text-mayo-dark tracking-tighter mb-8 serif-font leading-[0.9] max-w-5xl mx-auto">
+          El futuro de la salud <span className="italic text-mayo-blue">reumatológica</span> es ahora.
+        </h1>
+        
+        <p className="text-lg sm:text-xl text-mayo-slate max-w-2xl mx-auto leading-relaxed mb-12 font-medium">
+          Evaluaciones instantáneas impulsadas por inteligencia artificial de grado médico para detectar condiciones autoinmunes antes que nunca.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <button
+            onClick={onStart}
+            className="mayo-btn-pill w-full sm:w-auto bg-mayo-blue text-white px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] hover:bg-mayo-dark hover:shadow-premium transition-all active:scale-95"
+          >
+            Comenzar Evaluación
           </button>
-          
-          <div className="bg-mayo-blue hover:bg-mayo-accent text-mayo-dark p-8 sm:p-12 text-left flex flex-col justify-between h-56 sm:h-80 transition-all cursor-pointer group opacity-95">
-            <svg className="w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <span className="text-xl sm:text-2xl font-bold leading-tight serif-font">Para donar e investigación</span>
-          </div>
-          
-          <div className="bg-mayo-blue hover:bg-mayo-accent text-mayo-dark p-8 sm:p-12 text-left flex flex-col justify-between h-56 sm:h-80 transition-all cursor-pointer group opacity-90">
-            <svg className="w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a2 2 0 00-1.96.808l-.583.777a2 2 0 01-2.455.514l-4.788-2.394a2 2 0 01-.514-2.455l.777-.583a2 2 0 00.808-1.96l-.477-2.387a2 2 0 00-.547-1.022L7.428 5.428a2 2 0 00-2.828 0L3.428 6.6a2 2 0 00-.547 1.022l-.477 2.387a2 2 0 00.808 1.96l.777.583a2 2 0 01.514 2.455l-2.394 4.788a2 2 0 01-2.455.514l-.583-.777a2 2 0 00-1.96-.808l-2.387.477a2 2 0 00-1.022.547l-1.172 1.172a2 2 0 000 2.828l1.172 1.172a2 2 0 002.828 0l1.172-1.172z" />
-            </svg>
-            <span className="text-xl sm:text-2xl font-bold leading-tight serif-font">Enfermedades y condiciones</span>
-          </div>
-          
-          <div className="bg-mayo-blue hover:bg-mayo-accent text-mayo-dark p-8 sm:p-12 text-left flex flex-col justify-between h-56 sm:h-80 transition-all cursor-pointer group opacity-85">
-            <svg className="w-8 h-8 sm:w-12 sm:h-12 mb-2 sm:mb-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span className="text-xl sm:text-2xl font-bold leading-tight serif-font">Encontrar un especialista</span>
-          </div>
+          <button className="mayo-btn-pill w-full sm:w-auto px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] border border-mayo-border bg-white hover:bg-mayo-light transition-all">
+            Ver Especialistas
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 pb-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { title: "Diagnóstico Rápido", icon: "M13 10V3L4 14h7v7l9-11h-7z" },
+            { title: "Expertos en Red", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" },
+            { title: "Privacidad Total", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" }
+          ].map((feature, i) => (
+            <div key={i} className="glass-effect p-8 rounded-2xl shadow-glass hover:shadow-premium transition-all duration-500">
+              <div className="w-12 h-12 bg-mayo-blue/10 rounded-xl flex items-center justify-center text-mayo-blue mb-6">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={feature.icon} />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-mayo-dark serif-font mb-2">{feature.title}</h3>
+              <p className="text-sm text-mayo-slate">Protección y precisión de datos nivel hospitalario.</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
