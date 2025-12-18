@@ -23,7 +23,7 @@ const firebaseConfig = {
   measurementId: "G-4XRTQD3M5G"
 };
 
-// Inicialización defensiva de la App
+// Inicialización segura de Firebase
 let app: FirebaseApp;
 if (getApps().length === 0) {
   app = initializeApp(firebaseConfig);
@@ -35,7 +35,6 @@ if (getApps().length === 0) {
 export const db: Firestore = getFirestore(app);
 
 export const firestoreService = {
-  // Patologías
   getDiseases: (callback: (data: any[]) => void) => {
     return onSnapshot(collection(db, "diseases"), (snapshot: QuerySnapshot<DocumentData>) => {
       const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ 
@@ -45,7 +44,6 @@ export const firestoreService = {
       callback(data);
     });
   },
-  // Doctores
   getDoctors: (callback: (data: any[]) => void) => {
     return onSnapshot(collection(db, "doctors"), (snapshot: QuerySnapshot<DocumentData>) => {
       const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ 
@@ -55,7 +53,6 @@ export const firestoreService = {
       callback(data);
     });
   },
-  // Operaciones genéricas
   saveItem: async (col: string, data: any) => {
     return await addDoc(collection(db, col), data);
   },

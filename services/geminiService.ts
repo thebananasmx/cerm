@@ -1,6 +1,12 @@
-
 /**
- * Servicio de Gemini deshabilitado para evitar conflictos.
- * La aplicación ahora utiliza diagnosticService.ts con lógica local/mock.
+ * Servicio de Gemini deshabilitado por completo para evitar conflictos con Firebase.
+ * La aplicación utiliza diagnosticService.ts para la lógica de triaje.
  */
-export const geminiServiceDisabled = true;
+
+export const getTriageSummary = async () => {
+  return null;
+};
+
+export const startTriageChat = () => {
+  return null;
+};
