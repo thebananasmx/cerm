@@ -1,9 +1,18 @@
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "firebase/app";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  deleteDoc, 
+  doc, 
+  onSnapshot,
+  QuerySnapshot,
+  DocumentData,
+  QueryDocumentSnapshot
+} from "firebase/firestore";
 
 // NOTA: Para producción, estas credenciales deben ser variables de entorno.
-// Para este PoC, se asume un proyecto Firebase activo.
 const firebaseConfig = {
   apiKey: "AIzaSyCzzRBzN_1wAMeeI1aNSfURB667vhUdK3Q",
   authDomain: "cerm-check-ia.firebaseapp.com",
@@ -19,16 +28,22 @@ export const db = getFirestore(app);
 
 export const firestoreService = {
   // Patologías
-  getDiseases: (callback: any) => {
-    return onSnapshot(collection(db, "diseases"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  getDiseases: (callback: (data: any[]) => void) => {
+    return onSnapshot(collection(db, "diseases"), (snapshot: QuerySnapshot<DocumentData>) => {
+      const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
       callback(data);
     });
   },
   // Doctores
-  getDoctors: (callback: any) => {
-    return onSnapshot(collection(db, "doctors"), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  getDoctors: (callback: (data: any[]) => void) => {
+    return onSnapshot(collection(db, "doctors"), (snapshot: QuerySnapshot<DocumentData>) => {
+      const data = snapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
       callback(data);
     });
   },

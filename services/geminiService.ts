@@ -118,7 +118,7 @@ export const getTriageSummary = async (messages: Message[]): Promise<TriageResul
       }
     });
 
-    const data = safeParseJSON(response.text);
+    const data = safeParseJSON(response.text ?? '');
 
     return {
       condition: data.condition || "Evaluación Clínica Pendiente",
