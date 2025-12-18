@@ -57,11 +57,12 @@ const handleApiError = (error: any) => {
   throw error;
 };
 
+// Use 'gemini-3-pro-preview' for medical triage which requires advanced reasoning
 export const startTriageChat = () => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     return ai.chats.create({
-      model: 'gemini-2.5-flash-preview-09-2025',
+      model: 'gemini-3-pro-preview',
       config: {
         ...OPTIMIZED_CONFIG,
         systemInstruction: SYSTEM_PROMPT,
@@ -85,10 +86,11 @@ export const startTriageChat = () => {
   }
 };
 
+// Use 'gemini-3-pro-preview' for generating structured diagnosis summaries
 export const getTriageSummary = async (messages: Message[]): Promise<TriageResult> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const model = 'gemini-2.5-flash-preview-09-2025';
+    const model = 'gemini-3-pro-preview';
     
     const recentMessages = messages.slice(-12); 
     

@@ -17,11 +17,14 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   
-  const recommendedDoctor = doctors[0] || {
+  // Added missing properties 'id' and 'tags' to match the Doctor interface and fix TS errors
+  const recommendedDoctor: Doctor = doctors[0] || {
+    id: 'default-doc',
     name: "Especialista Reumatólogo",
     specialty: "Inmunología Clínica",
     imageUrl: "https://via.placeholder.com/400",
-    phone: "0000000000"
+    phone: "0000000000",
+    tags: []
   };
 
   const getWhatsAppLink = (doctor: Doctor) => {

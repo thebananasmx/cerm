@@ -5,12 +5,13 @@ import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, o
 // NOTA: Para producción, estas credenciales deben ser variables de entorno.
 // Para este PoC, se asume un proyecto Firebase activo.
 const firebaseConfig = {
-  apiKey: "AIzaSyMockKey-12345",
-  authDomain: "cerm-check.firebaseapp.com",
-  projectId: "cerm-check",
-  storageBucket: "cerm-check.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
+  apiKey: "AIzaSyCzzRBzN_1wAMeeI1aNSfURB667vhUdK3Q",
+  authDomain: "cerm-check-ia.firebaseapp.com",
+  projectId: "cerm-check-ia",
+  storageBucket: "cerm-check-ia.firebasestorage.app",
+  messagingSenderId: "901389284480",
+  appId: "1:901389284480:web:b0bc51b314c604c050a265",
+  measurementId: "G-4XRTQD3M5G"
 };
 
 const app = initializeApp(firebaseConfig);
