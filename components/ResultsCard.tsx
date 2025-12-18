@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TriageResult, Doctor } from '../types';
 
 interface ResultsCardProps {
@@ -9,15 +9,33 @@ interface ResultsCardProps {
 }
 
 const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) => {
+  const now = new Date();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number>(now.getDate());
+  const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
-  
-  // Added missing properties 'id' and 'tags' to match the Doctor interface and fix TS errors
+
+  const monthNames = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return [currentYear, currentYear + 1];
+  }, []);
+
+  const calendarData = useMemo(() => {
+    const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1).getDay();
+    return { daysInMonth, firstDayOfMonth };
+  }, [selectedMonth, selectedYear]);
+
   const recommendedDoctor: Doctor = doctors[0] || {
     id: 'default-doc',
     name: "Especialista Reumatólogo",
@@ -28,12 +46,12 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
   };
 
   const getWhatsAppLink = (doctor: Doctor) => {
-    const detail = selectedDay && selectedTime ? ` para el día ${selectedDay} a las ${selectedTime}` : "";
+    const dateStr = `${selectedDay}/${selectedMonth + 1}/${selectedYear}`;
+    const detail = selectedTime ? ` para el día ${dateStr} a las ${selectedTime}` : ` para el día ${dateStr}`;
     const message = encodeURIComponent(`Hola, solicito cita${detail} tras mi evaluación IA: ${result.condition}.`);
     return `https://wa.me/${doctor.phone}?text=${message}`;
   };
 
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const timeSlots = ['09:00', '10:30', '12:00', '15:30', '17:00'];
 
@@ -152,26 +170,63 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
             <div className="p-6 sm:p-10 max-h-[70vh] overflow-y-auto custom-scroll">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
                 {/* Calendar Side */}
-                <div>
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-mayo-slate mb-4">Marzo 2024</h4>
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between mb-6 gap-2">
+                    <select 
+                      value={selectedMonth} 
+                      onChange={(e) => {
+                        setSelectedMonth(parseInt(e.target.value));
+                        setSelectedDay(1);
+                      }}
+                      className="bg-white border border-mayo-border rounded-xl px-3 py-2 text-xs font-bold text-mayo-dark focus:ring-2 focus:ring-mayo-blue focus:outline-none flex-grow"
+                    >
+                      {monthNames.map((name, i) => (
+                        <option key={i} value={i}>{name}</option>
+                      ))}
+                    </select>
+                    <select 
+                      value={selectedYear} 
+                      onChange={(e) => {
+                        setSelectedYear(parseInt(e.target.value));
+                        setSelectedDay(1);
+                      }}
+                      className="bg-white border border-mayo-border rounded-xl px-3 py-2 text-xs font-bold text-mayo-dark focus:ring-2 focus:ring-mayo-blue focus:outline-none"
+                    >
+                      {years.map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-7 gap-1">
                     {weekDays.map(wd => (
                       <div key={wd} className="text-center text-[8px] font-bold text-slate-400 uppercase py-2">{wd}</div>
                     ))}
-                    {days.map(day => (
-                      <button
-                        key={day}
-                        onClick={() => setSelectedDay(day)}
-                        className={`
-                          aspect-square flex items-center justify-center text-xs font-bold rounded-xl transition-all
-                          ${selectedDay === day 
-                            ? 'bg-mayo-blue text-white shadow-premium scale-110' 
-                            : 'hover:bg-mayo-surface text-mayo-dark'}
-                        `}
-                      >
-                        {day}
-                      </button>
+                    {/* Padding for first day of month */}
+                    {Array.from({ length: calendarData.firstDayOfMonth }).map((_, i) => (
+                      <div key={`empty-${i}`} className="aspect-square"></div>
                     ))}
+                    {Array.from({ length: calendarData.daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const isToday = now.getDate() === day && now.getMonth() === selectedMonth && now.getFullYear() === selectedYear;
+                      return (
+                        <button
+                          key={day}
+                          onClick={() => setSelectedDay(day)}
+                          className={`
+                            aspect-square flex flex-col items-center justify-center text-xs font-bold rounded-xl transition-all relative
+                            ${selectedDay === day 
+                              ? 'bg-mayo-blue text-white shadow-premium scale-110' 
+                              : 'hover:bg-mayo-surface text-mayo-dark'}
+                          `}
+                        >
+                          {day}
+                          {isToday && selectedDay !== day && (
+                            <span className="absolute bottom-1 w-1 h-1 bg-mayo-blue rounded-full"></span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
