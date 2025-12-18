@@ -59,11 +59,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
       const data = JSON.parse(response.text) as AIResponse;
 
       if (data.complete || questionCount >= 6) {
-        const allMessages = [...messages, userMsg, { role: 'model', text: data.question }];
+        const modelMsg: Message = { role: 'model', text: data.question };
+        const allMessages: Message[] = [...messages, userMsg, modelMsg];
         const summary = await getTriageSummary(allMessages);
         onComplete(summary, allMessages);
       } else {
-        setMessages(prev => [...prev, { role: 'model', text: data.question }]);
+        const modelMsg: Message = { role: 'model', text: data.question };
+        setMessages(prev => [...prev, modelMsg]);
         setOptions(data.options);
         setQuestionCount(prev => prev + 1);
       }

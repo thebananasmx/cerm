@@ -3,6 +3,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { SYSTEM_PROMPT, SUMMARY_PROMPT } from "../constants";
 import { Message, TriageResult } from "../types";
 
+// Declarar process para evitar errores de compilación TS en entornos de navegador/Vite
+declare const process: {
+  env: {
+    API_KEY: string;
+  };
+};
+
 // Inicialización directa según directrices
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
