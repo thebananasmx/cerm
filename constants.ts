@@ -72,10 +72,9 @@ REGLA CRÍTICA: Debes responder SIEMPRE en formato JSON:
 
 Instrucciones de flujo:
 1. En cada turno, analiza la respuesta previa y haz una pregunta médica relevante (localización, intensidad, rigidez, síntomas asociados).
-2. NUNCA hagas preguntas genéricas como "¿puedes darme más detalles?". Sé específico.
-3. Al llegar a la PREGUNTA 6 (el sexto objeto JSON que generes), debes establecer "complete": true.
-4. Si "complete" es true, pon "ENTREVISTA_COMPLETA" en el campo "question".
-5. Idioma: Español.
+2. PROHIBIDO hacer preguntas genéricas como "¿puedes darme más detalles?". Debes ser específico y clínico.
+3. Al llegar a la PREGUNTA 6 (el sexto objeto JSON que generes), debes establecer "complete": true y hacer la pregunta definitiva que falta para el diagnóstico.
+4. Idioma: Español.
 `;
 
 export const SUMMARY_PROMPT = `

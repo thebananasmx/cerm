@@ -16,7 +16,6 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   
-  // Lógica de filtrado defensiva para evitar errores de undefined
   const matchedDoctors = (doctors || []).filter(doc => {
     if (!doc.tags || !Array.isArray(doc.tags)) return false;
     const cond = (result?.condition || "").toLowerCase();
@@ -47,10 +46,9 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-16">
-      {/* Botón Volver */}
       <button 
         onClick={onRetry}
-        className="mb-6 flex items-center text-mayo-blue font-bold uppercase text-[10px] sm:text-xs tracking-[0.2em] hover:opacity-70 transition-opacity"
+        className="mb-6 flex items-center text-mayo-accent font-bold uppercase text-[10px] sm:text-xs tracking-[0.2em] hover:opacity-70 transition-opacity"
       >
         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
@@ -59,29 +57,29 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
       </button>
 
       {/* 1. SECCIÓN DE DIAGNÓSTICO PRINCIPAL */}
-      <div className="bg-mayo-blue text-white rounded-sm shadow-xl overflow-hidden mb-8">
+      <div className="bg-mayo-blue text-mayo-dark rounded-sm shadow-xl overflow-hidden mb-8">
         <div className="p-6 sm:p-12">
           <div className="flex items-center space-x-2 mb-4">
              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
-               result.urgency === 'Alta' ? 'bg-red-500 text-white' : 'bg-white/20 text-white'
+               result.urgency === 'Alta' ? 'bg-red-600 text-white' : 'bg-mayo-dark/10 text-mayo-dark'
              }`}>
                Prioridad {result.urgency || "Media"}
              </span>
-             <span className="text-white/60 text-[10px] font-bold uppercase tracking-[0.3em]">Resultado IA</span>
+             <span className="text-mayo-dark/60 text-[10px] font-bold uppercase tracking-[0.3em]">Resultado IA</span>
           </div>
           <h1 className="text-4xl sm:text-7xl font-bold serif-font mb-6 leading-tight tracking-tight">
             {result.condition || "Evaluación Clínica"}
           </h1>
-          <p className="text-lg sm:text-2xl font-medium text-white/90 serif-font italic leading-relaxed border-l-4 border-white/30 pl-6">
+          <p className="text-lg sm:text-2xl font-medium text-mayo-dark/90 serif-font italic leading-relaxed border-l-4 border-mayo-dark/30 pl-6">
             "{result.summary || "No se pudo generar un resumen detallado."}"
           </p>
         </div>
       </div>
 
-      {/* 2. ESPECIALISTA RECOMENDADO - DESTACADO CENTRAL */}
-      <div className="bg-white border-2 border-mayo-blue/20 rounded-sm shadow-2xl overflow-hidden mb-12 transform hover:scale-[1.01] transition-transform">
-        <div className="bg-mayo-light px-6 py-3 border-b border-mayo-blue/10">
-          <h2 className="text-mayo-blue font-bold uppercase text-[11px] tracking-[0.4em]">Especialista Recomendado para su Caso</h2>
+      {/* 2. ESPECIALISTA RECOMENDADO */}
+      <div className="bg-white border-2 border-mayo-blue/40 rounded-sm shadow-2xl overflow-hidden mb-12 transform hover:scale-[1.01] transition-transform">
+        <div className="bg-mayo-light px-6 py-3 border-b border-mayo-blue/20">
+          <h2 className="text-mayo-dark font-bold uppercase text-[11px] tracking-[0.4em]">Especialista Recomendado para su Caso</h2>
         </div>
         <div className="p-6 sm:p-10 flex flex-col md:flex-row items-center gap-8 sm:gap-12">
           <div className="w-40 h-40 sm:w-56 sm:h-56 shrink-0 rounded-sm overflow-hidden shadow-lg border-4 border-white">
@@ -97,12 +95,12 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
 
           <div className="flex-grow text-center md:text-left">
             <h3 className="text-3xl sm:text-4xl font-bold text-mayo-dark serif-font mb-2">{recommendedDoctor.name}</h3>
-            <p className="text-mayo-blue font-bold uppercase tracking-widest text-xs sm:text-sm mb-6">{recommendedDoctor.specialty}</p>
+            <p className="text-mayo-accent font-bold uppercase tracking-widest text-xs sm:text-sm mb-6">{recommendedDoctor.specialty}</p>
             
             <div className="flex flex-col sm:flex-row gap-4">
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="flex-grow bg-mayo-blue text-white font-bold uppercase tracking-[0.2em] py-4 px-8 rounded-sm hover:bg-mayo-dark transition-all shadow-lg flex items-center justify-center space-x-3"
+                className="flex-grow bg-mayo-blue text-mayo-dark font-bold uppercase tracking-[0.2em] py-4 px-8 rounded-sm hover:bg-mayo-accent transition-all shadow-lg flex items-center justify-center space-x-3"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -114,7 +112,7 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
                 href={getWhatsAppLink(recommendedDoctor)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-600 text-white font-bold uppercase tracking-[0.1em] py-4 px-6 rounded-sm hover:bg-green-700 transition-all flex items-center justify-center"
+                className="bg-green-500 text-mayo-dark font-bold uppercase tracking-[0.1em] py-4 px-6 rounded-sm hover:bg-green-600 transition-all flex items-center justify-center"
               >
                 WhatsApp
               </a>
@@ -123,11 +121,10 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
         </div>
       </div>
 
-      {/* 3. INFORMACIÓN ADICIONAL Y AVISOS */}
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-slate-50 p-6 sm:p-8 rounded-sm border border-slate-200">
+        <div className="bg-mayo-light p-6 sm:p-8 rounded-sm border border-mayo-blue/20">
           <h4 className="font-bold text-mayo-dark uppercase text-xs tracking-widest mb-4">Aviso de Seguridad</h4>
-          <p className="text-sm text-slate-600 leading-relaxed italic">
+          <p className="text-sm text-mayo-dark/70 leading-relaxed italic">
             Este informe ha sido generado por el sistema CERM CHECK IA basado exclusivamente en sus respuestas. 
             <strong> No sustituye una consulta médica presencial.</strong> El {recommendedDoctor.name} validará estos hallazgos durante su cita.
           </p>
@@ -143,23 +140,22 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
         </div>
       </div>
 
-      {/* MODAL DE CALENDARIO */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
-          <div className="fixed inset-0 bg-mayo-dark/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+          <div className="fixed inset-0 bg-mayo-dark/95 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
           <div className="relative bg-white w-full max-w-xl shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col rounded-sm">
-            <div className="bg-mayo-blue p-6 sm:p-8 text-white">
+            <div className="bg-mayo-blue p-6 sm:p-8 text-mayo-dark">
               <div className="flex justify-between items-start">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white/50 bg-white/10 shrink-0">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-mayo-dark/20 bg-white/30 shrink-0">
                     <img src={recommendedDoctor.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h3 className="text-xl font-bold serif-font">Cita con {recommendedDoctor.name}</h3>
-                    <p className="text-[10px] uppercase tracking-widest text-white/70">Seleccione su fecha preferida</p>
+                    <p className="text-[10px] uppercase tracking-widest text-mayo-dark/70">Seleccione su fecha preferida</p>
                   </div>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-white/70">
+                <button onClick={() => setIsModalOpen(false)} className="text-mayo-dark hover:text-mayo-accent">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -183,7 +179,7 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
                     className={`
                       aspect-square flex items-center justify-center text-xs font-bold transition-all border
                       ${selectedDay === day 
-                        ? 'bg-mayo-blue text-white border-mayo-blue' 
+                        ? 'bg-mayo-blue text-mayo-dark border-mayo-blue' 
                         : 'bg-white text-mayo-dark border-slate-50 hover:border-mayo-blue'}
                     `}
                   >
@@ -196,7 +192,7 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Horarios Disponibles</p>
                 <div className="grid grid-cols-3 gap-2">
                   {['09:00', '11:30', '16:00'].map(time => (
-                    <button key={time} className="py-2 border border-slate-200 text-[10px] font-bold text-mayo-dark hover:bg-mayo-blue hover:text-white transition-all">
+                    <button key={time} className="py-2 border border-slate-200 text-[10px] font-bold text-mayo-dark hover:bg-mayo-blue hover:text-mayo-dark transition-all">
                       {time}
                     </button>
                   ))}
@@ -209,7 +205,7 @@ const ResultsCard: React.FC<ResultsCardProps> = ({ result, doctors, onRetry }) =
                 rel="noopener noreferrer"
                 className={`
                   w-full py-4 flex items-center justify-center text-xs font-bold uppercase tracking-[0.2em] transition-all
-                  ${selectedDay ? 'bg-mayo-blue text-white shadow-xl cursor-pointer' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
+                  ${selectedDay ? 'bg-mayo-blue text-mayo-dark shadow-xl cursor-pointer' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
                 `}
                 onClick={(e) => !selectedDay && e.preventDefault()}
               >

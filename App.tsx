@@ -53,11 +53,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white text-mayo-dark">
       <ToastContainer />
       
       {/* Global Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-mayo-blue/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
           {/* Logo Brand */}
           <div 
@@ -65,11 +65,11 @@ const App: React.FC = () => {
             onClick={() => setView('landing')}
           >
             <div className="flex flex-col border-r border-mayo-blue pr-3 leading-none">
-              <span className="text-mayo-blue font-bold text-lg sm:text-xl uppercase tracking-tighter">CERM</span>
-              <span className="text-mayo-blue font-light text-lg sm:text-xl uppercase tracking-tighter">CHECK</span>
+              <span className="text-mayo-dark font-bold text-lg sm:text-xl uppercase tracking-tighter">CERM</span>
+              <span className="text-mayo-accent font-light text-lg sm:text-xl uppercase tracking-tighter">CHECK</span>
             </div>
             <div className="w-8 h-8 flex items-center justify-center text-mayo-blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
@@ -77,19 +77,14 @@ const App: React.FC = () => {
 
           {/* Nav Icons */}
           <div className="flex items-center space-x-4 sm:space-x-8">
-            <button className="flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-mayo-blue transition-colors">
+            <button className="flex items-center space-x-2 text-sm font-bold text-mayo-dark uppercase tracking-widest hover:text-mayo-accent transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="hidden sm:inline">Iniciar la sesión</span>
+              <span className="hidden sm:inline">Sesión</span>
             </button>
             <div className="flex items-center space-x-4">
-              <button className="p-2 text-slate-700 hover:text-mayo-blue">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-              <button onClick={() => setView('admin')} className="p-2 text-slate-700 hover:text-mayo-blue">
+              <button onClick={() => setView('admin')} className="p-2 text-mayo-dark hover:text-mayo-accent transition-colors">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
@@ -124,9 +119,9 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="bg-white border-t border-slate-100 py-12">
+      <footer className="bg-mayo-light border-t border-mayo-blue/10 py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm text-slate-400">© 1998-2024 CERM CHECK para la Educación e Investigación Médica.</p>
+          <p className="text-sm text-mayo-dark/60 font-medium">© 2025 CERM para la Educación e Investigación Médica.</p>
         </div>
       </footer>
     </div>
