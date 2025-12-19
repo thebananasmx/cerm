@@ -13,18 +13,43 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
   const [activeTab, setActiveTab] = useState<'diseases' | 'doctors'>('diseases');
   const [showForm, setShowForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
     extra: '', 
     phone: '',
-    keywords: '' // Nuevo campo para keywords en el form
+    keywords: '' 
   });
 
   const resetForm = () => {
     setFormData({ name: '', extra: '', phone: '', keywords: '' });
     setShowForm(false);
     setIsSubmitting(false);
+    setEditingId(null);
+  };
+
+  const startEdit = (item: any) => {
+    if (activeTab === 'diseases') {
+      const d = item as Disease;
+      setFormData({
+        name: d.name,
+        extra: d.urgency,
+        phone: '',
+        keywords: (d.keywords || []).join(', ')
+      });
+    } else {
+      const doc = item as Doctor;
+      setFormData({
+        name: doc.name,
+        extra: doc.specialty,
+        phone: doc.phone,
+        keywords: ''
+      });
+    }
+    setEditingId(item.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -38,33 +63,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
     try {
       if (activeTab === 'diseases') {
         const keywordsArray = formData.keywords.split(',').map(k => k.trim()).filter(k => k !== '');
-        await firestoreService.saveItem("diseases", {
+        const diseaseData = {
           name: formData.name,
-          description: "Sincronizado desde el panel de administración.",
+          description: "Información clínica gestionada desde el panel.",
           urgency: formData.extra || "Alta",
           symptoms: keywordsArray,
           keywords: keywordsArray
-        });
+        };
+
+        if (editingId) {
+          await firestoreService.updateItem("diseases", editingId, diseaseData);
+          toastService.success("Patología actualizada correctamente.");
+        } else {
+          await firestoreService.saveItem("diseases", diseaseData);
+          toastService.success("Nueva patología registrada.");
+        }
       } else {
-        await firestoreService.saveItem("doctors", {
+        const doctorData = {
           name: formData.name,
           specialty: formData.extra || "Reumatología Avanzada",
-          imageUrl: `https://i.pravatar.cc/150?u=${Math.random()}`,
           phone: formData.phone || "5550000000",
           tags: [formData.extra]
-        });
+        };
+
+        if (editingId) {
+          await firestoreService.updateItem("doctors", editingId, doctorData);
+          toastService.success("Datos del especialista actualizados.");
+        } else {
+          await firestoreService.saveItem("doctors", {
+            ...doctorData,
+            imageUrl: `https://i.pravatar.cc/150?u=${Math.random()}`,
+          });
+          toastService.success("Nuevo especialista añadido.");
+        }
       }
-      toastService.success("Sincronizado con Firebase correctamente.");
       resetForm();
     } catch (error) {
       console.error(error);
-      toastService.error("Error al guardar en la nube.");
+      toastService.error("Error al sincronizar con la nube.");
       setIsSubmitting(false);
     }
   };
 
   const deleteItem = async (id: string, col: string) => {
-    if (confirm("¿Eliminar este registro de la base de datos central?")) {
+    if (confirm("¿Eliminar este registro de forma permanente? Esta acción no se puede deshacer.")) {
       try {
         await firestoreService.removeItem(col, id);
         toastService.info("Registro eliminado de Firebase.");
@@ -83,13 +125,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
         </div>
         <div className="flex gap-4 bg-white p-1.5 rounded-2xl border border-mayo-border shadow-sm">
           <button 
-            onClick={() => { setActiveTab('diseases'); setShowForm(false); }} 
+            onClick={() => { setActiveTab('diseases'); resetForm(); }} 
             className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'diseases' ? 'bg-mayo-blue text-white shadow-premium' : 'text-mayo-slate hover:bg-mayo-surface'}`}
           >
             Patologías
           </button>
           <button 
-            onClick={() => { setActiveTab('doctors'); setShowForm(false); }} 
+            onClick={() => { setActiveTab('doctors'); resetForm(); }} 
             className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'doctors' ? 'bg-mayo-blue text-white shadow-premium' : 'text-mayo-slate hover:bg-mayo-surface'}`}
           >
             Doctores
@@ -99,8 +141,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
 
       {showForm && (
         <div className="mb-8 animate-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSave} className="bg-mayo-dark text-white p-8 rounded-[2rem] shadow-premium">
-            <h3 className="text-lg font-bold serif-font mb-6">Nuevo {activeTab === 'diseases' ? 'Diagnóstico' : 'Especialista'}</h3>
+          <form onSubmit={handleSave} className="bg-mayo-dark text-white p-8 rounded-[2rem] shadow-premium border-l-4 border-mayo-blue">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold serif-font italic">
+                {editingId ? 'Editando Registro Existente' : `Nuevo ${activeTab === 'diseases' ? 'Diagnóstico' : 'Especialista'}`}
+              </h3>
+              {editingId && (
+                <span className="bg-mayo-blue/20 text-mayo-blue px-3 py-1 rounded-full text-[8px] font-black uppercase">ID: {editingId.substring(0,8)}...</span>
+              )}
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Nombre Completo</label>
@@ -140,14 +190,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
               
               {activeTab === 'diseases' && (
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Síntomas / Keywords (Separados por coma)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Síntomas / Keywords para IA (Separados por coma)</label>
                   <textarea 
                     value={formData.keywords}
                     onChange={(e) => setFormData({...formData, keywords: e.target.value})}
                     placeholder="Ej: Manos, Rigidez, Fatiga, Manchas rojas"
                     className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors h-24"
                   />
-                  <p className="text-[9px] text-white/40">Estas palabras se usarán para emparejar las respuestas del chat con este diagnóstico.</p>
                 </div>
               )}
 
@@ -164,6 +213,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                 </div>
               )}
             </div>
+            
             <div className="flex justify-end gap-4 mt-8">
               <button type="button" onClick={resetForm} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors">Cancelar</button>
               <button 
@@ -171,7 +221,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                 disabled={isSubmitting}
                 className="bg-mayo-blue text-mayo-dark px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg disabled:opacity-50"
               >
-                {isSubmitting ? 'Sincronizando...' : 'Guardar en Firestore'}
+                {isSubmitting ? 'Procesando...' : editingId ? 'Actualizar Registro' : 'Guardar en Firestore'}
               </button>
             </div>
           </form>
@@ -199,8 +249,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
             <thead>
               <tr className="bg-mayo-light text-mayo-slate text-[10px] font-black uppercase tracking-widest">
                 <th className="px-10 py-5">Nombre / Registro</th>
-                <th className="px-10 py-5">Keywords IA</th>
-                <th className="px-10 py-5 text-right">Control</th>
+                <th className="px-10 py-5">Información Adicional</th>
+                <th className="px-10 py-5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-mayo-border">
@@ -213,14 +263,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                     </td>
                     <td className="px-10 py-6">
                       <div className="flex flex-wrap gap-1">
-                        {(d.keywords || []).slice(0, 3).map((k, i) => (
+                        {(d.keywords || []).slice(0, 4).map((k, i) => (
                           <span key={i} className="bg-mayo-blue/10 text-mayo-accent px-2 py-0.5 rounded text-[8px] font-bold uppercase">{k}</span>
                         ))}
-                        {(d.keywords || []).length > 3 && <span className="text-[8px] text-mayo-slate font-bold">+{(d.keywords || []).length - 3}</span>}
                       </div>
                     </td>
                     <td className="px-10 py-6 text-right">
-                      <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
+                      <div className="flex justify-end gap-3">
+                        <button onClick={() => startEdit(d)} className="text-mayo-blue font-black text-[10px] uppercase hover:underline">Editar</button>
+                        <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
+                      </div>
                     </td>
                   </tr>
                 )) : (
@@ -237,10 +289,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                       </div>
                     </td>
                     <td className="px-10 py-6">
-                      <span className="bg-mayo-blue/10 text-mayo-accent px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter">Activo</span>
+                      <div className="text-[10px] text-mayo-slate font-bold uppercase tracking-widest">WhatsApp: {doc.phone}</div>
                     </td>
                     <td className="px-10 py-6 text-right">
-                      <button onClick={() => deleteItem(doc.id, "doctors")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
+                      <div className="flex justify-end gap-3">
+                        <button onClick={() => startEdit(doc)} className="text-mayo-blue font-black text-[10px] uppercase hover:underline">Editar</button>
+                        <button onClick={() => deleteItem(doc.id, "doctors")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
+                      </div>
                     </td>
                   </tr>
                 )) : (

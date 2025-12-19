@@ -4,6 +4,7 @@ import {
   getFirestore, 
   collection, 
   addDoc, 
+  updateDoc,
   deleteDoc, 
   doc, 
   onSnapshot,
@@ -55,6 +56,10 @@ export const firestoreService = {
   },
   saveItem: async (col: string, data: any) => {
     return await addDoc(collection(db, col), data);
+  },
+  updateItem: async (col: string, id: string, data: any) => {
+    const docRef = doc(db, col, id);
+    return await updateDoc(docRef, data);
   },
   removeItem: async (col: string, id: string) => {
     return await deleteDoc(doc(db, col, id));
