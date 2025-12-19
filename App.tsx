@@ -13,9 +13,9 @@ const App: React.FC = () => {
   const [diseases, setDiseases] = useState<Disease[]>([]);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
+  const [chatHistory, setChatHistory] = useState<Message[]>([]);
 
   useEffect(() => {
-    // Escucha en tiempo real de Firebase
     const unsubDiseases = firestoreService.getDiseases((data: Disease[]) => {
       setDiseases(data.length > 0 ? data : []);
     });
@@ -33,6 +33,7 @@ const App: React.FC = () => {
   
   const handleTriageComplete = (result: TriageResult, history: Message[]) => {
     setTriageResult(result);
+    setChatHistory(history);
     setView('results');
   };
 
@@ -74,7 +75,12 @@ const App: React.FC = () => {
         {view === 'landing' && <Hero onStart={handleStartChat} />}
         {view === 'chat' && <ChatInterface onComplete={handleTriageComplete} diseases={diseases} />}
         {view === 'results' && triageResult && (
-          <ResultsCard result={triageResult} doctors={doctors} onRetry={() => setView('chat')} />
+          <ResultsCard 
+            result={triageResult} 
+            history={chatHistory}
+            doctors={doctors} 
+            onRetry={() => setView('chat')} 
+          />
         )}
         {view === 'admin' && <AdminPanel diseases={diseases} doctors={doctors} />}
       </main>

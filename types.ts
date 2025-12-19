@@ -15,6 +15,7 @@ export interface Doctor {
   imageUrl: string;
   phone: string;
   tags: string[]; 
+  keywords: string[]; // Nuevo campo para matching inteligente
 }
 
 export interface Message {

@@ -44,7 +44,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
         name: doc.name,
         extra: doc.specialty,
         phone: doc.phone,
-        keywords: ''
+        keywords: (doc.keywords || []).join(', ')
       });
     }
     setEditingId(item.id);
@@ -61,8 +61,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
 
     setIsSubmitting(true);
     try {
+      const keywordsArray = formData.keywords.split(',').map(k => k.trim()).filter(k => k !== '');
+
       if (activeTab === 'diseases') {
-        const keywordsArray = formData.keywords.split(',').map(k => k.trim()).filter(k => k !== '');
         const diseaseData = {
           name: formData.name,
           description: "Información clínica gestionada desde el panel.",
@@ -73,7 +74,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
 
         if (editingId) {
           await firestoreService.updateItem("diseases", editingId, diseaseData);
-          toastService.success("Patología actualizada correctamente.");
+          toastService.success("Patología actualizada.");
         } else {
           await firestoreService.saveItem("diseases", diseaseData);
           toastService.success("Nueva patología registrada.");
@@ -83,12 +84,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
           name: formData.name,
           specialty: formData.extra || "Reumatología Avanzada",
           phone: formData.phone || "5550000000",
-          tags: [formData.extra]
+          tags: [formData.extra],
+          keywords: keywordsArray
         };
 
         if (editingId) {
           await firestoreService.updateItem("doctors", editingId, doctorData);
-          toastService.success("Datos del especialista actualizados.");
+          toastService.success("Especialista actualizado.");
         } else {
           await firestoreService.saveItem("doctors", {
             ...doctorData,
@@ -100,18 +102,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
       resetForm();
     } catch (error) {
       console.error(error);
-      toastService.error("Error al sincronizar con la nube.");
+      toastService.error("Error al sincronizar con Firebase.");
       setIsSubmitting(false);
     }
   };
 
   const deleteItem = async (id: string, col: string) => {
-    if (confirm("¿Eliminar este registro de forma permanente? Esta acción no se puede deshacer.")) {
+    if (confirm("¿Eliminar permanentemente?")) {
       try {
         await firestoreService.removeItem(col, id);
-        toastService.info("Registro eliminado de Firebase.");
+        toastService.info("Registro eliminado.");
       } catch (e) {
-        toastService.error("No se pudo eliminar el registro.");
+        toastService.error("Error al eliminar.");
       }
     }
   };
@@ -141,15 +143,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
 
       {showForm && (
         <div className="mb-8 animate-in slide-in-from-top-4 duration-300">
-          <form onSubmit={handleSave} className="bg-mayo-dark text-white p-8 rounded-[2rem] shadow-premium border-l-4 border-mayo-blue">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold serif-font italic">
-                {editingId ? 'Editando Registro Existente' : `Nuevo ${activeTab === 'diseases' ? 'Diagnóstico' : 'Especialista'}`}
-              </h3>
-              {editingId && (
-                <span className="bg-mayo-blue/20 text-mayo-blue px-3 py-1 rounded-full text-[8px] font-black uppercase">ID: {editingId.substring(0,8)}...</span>
-              )}
-            </div>
+          <form onSubmit={handleSave} className="relative bg-mayo-dark text-white p-8 rounded-[2rem] shadow-premium border-l-4 border-mayo-blue">
+            {editingId && (
+              <div className="absolute top-6 right-8 flex flex-col items-end">
+                <span className="text-[8px] font-black text-mayo-blue uppercase tracking-widest mb-1 opacity-50">Firebase ID</span>
+                <span className="text-[10px] font-mono bg-white/5 px-3 py-1 rounded-lg border border-white/10 text-white/70 select-all" title={editingId}>
+                  {editingId.substring(0, 5)}...
+                </span>
+              </div>
+            )}
+            
+            <h3 className="text-lg font-bold serif-font mb-6 italic pr-32">
+              {editingId ? 'Editar Registro' : `Nuevo ${activeTab === 'diseases' ? 'Diagnóstico' : 'Especialista'}`}
+            </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -158,8 +164,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                   type="text" 
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Ej: Lupus Eritematoso"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue"
                   required
                 />
               </div>
@@ -171,57 +176,50 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                   <select 
                     value={formData.extra}
                     onChange={(e) => setFormData({...formData, extra: e.target.value})}
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue text-white"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none text-white"
                   >
-                    <option value="Baja" className="text-mayo-dark">Baja</option>
-                    <option value="Media" className="text-mayo-dark">Media</option>
-                    <option value="Alta" className="text-mayo-dark">Alta</option>
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
                   </select>
                 ) : (
                   <input 
                     type="text" 
                     value={formData.extra}
                     onChange={(e) => setFormData({...formData, extra: e.target.value})}
-                    placeholder="Ej: Inmunología"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors"
+                    placeholder="Ej: Reumatología"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none"
                   />
                 )}
               </div>
               
-              {activeTab === 'diseases' && (
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Síntomas / Keywords para IA (Separados por coma)</label>
-                  <textarea 
-                    value={formData.keywords}
-                    onChange={(e) => setFormData({...formData, keywords: e.target.value})}
-                    placeholder="Ej: Manos, Rigidez, Fatiga, Manchas rojas"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors h-24"
-                  />
-                </div>
-              )}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">Keywords para Matching IA (Separadas por coma)</label>
+                <textarea 
+                  value={formData.keywords}
+                  onChange={(e) => setFormData({...formData, keywords: e.target.value})}
+                  placeholder="Ej: manos, inflamación, joven, severo"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none h-24"
+                />
+              </div>
 
               {activeTab === 'doctors' && (
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">WhatsApp (Sin +)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-mayo-blue">WhatsApp</label>
                   <input 
                     type="text" 
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    placeholder="Ej: 5215551234567"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-mayo-blue transition-colors"
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm focus:outline-none"
                   />
                 </div>
               )}
             </div>
             
             <div className="flex justify-end gap-4 mt-8">
-              <button type="button" onClick={resetForm} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors">Cancelar</button>
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="bg-mayo-blue text-mayo-dark px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg disabled:opacity-50"
-              >
-                {isSubmitting ? 'Procesando...' : editingId ? 'Actualizar Registro' : 'Guardar en Firestore'}
+              <button type="button" onClick={resetForm} className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-white/50">Cancelar</button>
+              <button type="submit" disabled={isSubmitting} className="bg-mayo-blue text-mayo-dark px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                {isSubmitting ? 'Guardando...' : editingId ? 'Actualizar' : 'Crear'}
               </button>
             </div>
           </form>
@@ -231,14 +229,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
       <div className="bg-white border border-mayo-border rounded-[2rem] overflow-hidden shadow-glass">
         <div className="p-8 border-b border-mayo-border flex justify-between items-center bg-mayo-surface/30">
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-xs font-bold text-mayo-dark uppercase tracking-widest">Base de datos Firestore Activa</p>
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <p className="text-xs font-bold text-mayo-dark uppercase tracking-widest">Base de datos Activa</p>
           </div>
           {!showForm && (
-            <button 
-              onClick={() => setShowForm(true)} 
-              className="bg-mayo-dark text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-mayo-blue transition-all shadow-md"
-            >
+            <button onClick={() => setShowForm(true)} className="bg-mayo-dark text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest">
               + Nuevo Registro
             </button>
           )}
@@ -249,58 +244,48 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
             <thead>
               <tr className="bg-mayo-light text-mayo-slate text-[10px] font-black uppercase tracking-widest">
                 <th className="px-10 py-5">Nombre / Registro</th>
-                <th className="px-10 py-5">Información Adicional</th>
+                <th className="px-10 py-5">Keywords IA</th>
                 <th className="px-10 py-5 text-right">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-mayo-border">
               {activeTab === 'diseases' ? (
-                diseases.length > 0 ? diseases.map(d => (
-                  <tr key={d.id} className="hover:bg-mayo-surface/50 transition-colors group">
-                    <td className="px-10 py-6">
-                      <div className="font-bold text-mayo-dark">{d.name}</div>
-                      <div className="text-[10px] text-mayo-slate uppercase font-medium">Urgencia: {d.urgency}</div>
-                    </td>
+                diseases.map(d => (
+                  <tr key={d.id} className="hover:bg-mayo-surface/50 transition-colors">
+                    <td className="px-10 py-6 font-bold text-mayo-dark">{d.name}</td>
                     <td className="px-10 py-6">
                       <div className="flex flex-wrap gap-1">
-                        {(d.keywords || []).slice(0, 4).map((k, i) => (
+                        {(d.keywords || []).slice(0, 3).map((k, i) => (
                           <span key={i} className="bg-mayo-blue/10 text-mayo-accent px-2 py-0.5 rounded text-[8px] font-bold uppercase">{k}</span>
                         ))}
                       </div>
                     </td>
                     <td className="px-10 py-6 text-right">
-                      <div className="flex justify-end gap-3">
-                        <button onClick={() => startEdit(d)} className="text-mayo-blue font-black text-[10px] uppercase hover:underline">Editar</button>
-                        <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
-                      </div>
+                      <button onClick={() => startEdit(d)} className="text-mayo-blue mr-4 font-black text-[10px] uppercase">Editar</button>
+                      <button onClick={() => deleteItem(d.id, "diseases")} className="text-red-400 font-black text-[10px] uppercase">Borrar</button>
                     </td>
                   </tr>
-                )) : (
-                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay patologías registradas.</td></tr>
-                )
+                ))
               ) : (
-                doctors.length > 0 ? doctors.map(doc => (
-                  <tr key={doc.id} className="hover:bg-mayo-surface/50 transition-colors group">
+                doctors.map(doc => (
+                  <tr key={doc.id} className="hover:bg-mayo-surface/50 transition-colors">
                     <td className="px-10 py-6 flex items-center gap-4">
-                      <img src={doc.imageUrl} className="w-10 h-10 rounded-full object-cover border border-mayo-border" alt="" />
-                      <div>
-                        <div className="font-bold text-mayo-dark">{doc.name}</div>
-                        <div className="text-[10px] text-mayo-blue uppercase font-black tracking-widest">{doc.specialty}</div>
-                      </div>
+                      <img src={doc.imageUrl} className="w-8 h-8 rounded-full object-cover" alt="" />
+                      <div className="font-bold text-mayo-dark">{doc.name}</div>
                     </td>
                     <td className="px-10 py-6">
-                      <div className="text-[10px] text-mayo-slate font-bold uppercase tracking-widest">WhatsApp: {doc.phone}</div>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="flex justify-end gap-3">
-                        <button onClick={() => startEdit(doc)} className="text-mayo-blue font-black text-[10px] uppercase hover:underline">Editar</button>
-                        <button onClick={() => deleteItem(doc.id, "doctors")} className="text-red-400 font-black text-[10px] uppercase hover:text-red-600 transition-colors">Eliminar</button>
+                      <div className="flex flex-wrap gap-1">
+                        {(doc.keywords || []).slice(0, 3).map((k, i) => (
+                          <span key={i} className="bg-mayo-blue/10 text-mayo-accent px-2 py-0.5 rounded text-[8px] font-bold uppercase">{k}</span>
+                        ))}
                       </div>
                     </td>
+                    <td className="px-10 py-6 text-right">
+                      <button onClick={() => startEdit(doc)} className="text-mayo-blue mr-4 font-black text-[10px] uppercase">Editar</button>
+                      <button onClick={() => deleteItem(doc.id, "doctors")} className="text-red-400 font-black text-[10px] uppercase">Borrar</button>
+                    </td>
                   </tr>
-                )) : (
-                  <tr><td colSpan={3} className="px-10 py-20 text-center text-mayo-slate italic text-sm">No hay doctores registrados.</td></tr>
-                )
+                ))
               )}
             </tbody>
           </table>

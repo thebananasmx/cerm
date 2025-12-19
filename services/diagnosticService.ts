@@ -1,5 +1,5 @@
 
-import { Message, TriageResult, Disease } from '../types';
+import { Message, TriageResult, Disease, Doctor } from '../types';
 
 const CLINICAL_STEPS = [
   {
@@ -41,7 +41,6 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
     .filter(m => m.role === 'user')
     .map(m => (m.text || "").toLowerCase());
   
-  // Si no hay enfermedades en Firebase, usamos un fallback
   if (!diseases || diseases.length === 0) {
     return {
       condition: "Evaluación General",
@@ -50,11 +49,8 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
     };
   }
 
-  // Algoritmo de Scoring
   const scores = diseases.map(disease => {
     let score = 0;
-    
-    // Unificar síntomas y keywords para la búsqueda (Defensa contra campos undefined)
     const diseaseKeywords = Array.isArray(disease.keywords) ? disease.keywords : [];
     const diseaseSymptoms = Array.isArray(disease.symptoms) ? disease.symptoms : [];
     
@@ -66,7 +62,6 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
 
     userResponses.forEach(response => {
       searchTerms.forEach(term => {
-        // Coincidencia exacta o parcial
         if (response.includes(term) || term.includes(response)) {
           score += 1;
         }
@@ -76,10 +71,8 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
     return { disease, score };
   });
 
-  // Ordenar por puntuación y obtener la más alta
   const bestMatch = scores.sort((a, b) => b.score - a.score)[0];
 
-  // Si la puntuación es 0 o no hay match, no hay un cuadro claro
   if (!bestMatch || bestMatch.score === 0) {
     return {
       condition: "Cuadro Clínico Inespecífico",
@@ -96,4 +89,42 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
     urgency: disease.urgency,
     score: bestMatch.score
   };
+};
+
+/**
+ * Encuentra al doctor más compatible basándose en el historial de chat y el diagnóstico.
+ */
+export const findBestDoctor = (history: Message[], doctors: Doctor[], conditionName: string): Doctor | null => {
+  if (!doctors || doctors.length === 0) return null;
+
+  const userResponses = history
+    .filter(m => m.role === 'user')
+    .map(m => (m.text || "").toLowerCase());
+  
+  const searchSpace = [...userResponses, conditionName.toLowerCase()];
+
+  const scores = doctors.map(doc => {
+    let score = 0;
+    const docKeywords = Array.isArray(doc.keywords) ? doc.keywords : [];
+    const docTags = Array.isArray(doc.tags) ? doc.tags : [];
+    
+    const docTraits = [
+      ...docKeywords.map(k => k.toLowerCase()),
+      ...docTags.map(t => t.toLowerCase()),
+      (doc.specialty || "").toLowerCase()
+    ];
+
+    searchSpace.forEach(input => {
+      docTraits.forEach(trait => {
+        if (input.includes(trait) || trait.includes(input)) {
+          score += 1;
+        }
+      });
+    });
+
+    return { doc, score };
+  });
+
+  // Devolver el que tenga mayor puntuación, o el primero si todos son 0
+  return scores.sort((a, b) => b.score - a.score)[0].doc;
 };

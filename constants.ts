@@ -43,7 +43,9 @@ export const INITIAL_DOCTORS: Doctor[] = [
     specialty: 'Reumatólogo Especialista en Artritis',
     imageUrl: 'https://res.cloudinary.com/dg4wbuppq/image/upload/v1766029736/doctor1_tx0mgx.webp',
     phone: '5551234567',
-    tags: ['Artritis Reumatoide', 'Artritis']
+    tags: ['Artritis Reumatoide', 'Artritis'],
+    // Added missing keywords to satisfy Doctor interface
+    keywords: ['Artritis', 'Manos', 'Muñecas', 'Articulaciones']
   },
   {
     id: 'd2',
@@ -51,7 +53,9 @@ export const INITIAL_DOCTORS: Doctor[] = [
     specialty: 'Especialista en Enfermedades Autoinmunes',
     imageUrl: 'https://res.cloudinary.com/dg4wbuppq/image/upload/v1766029736/doctor2_ktq3jc.jpg',
     phone: '5559876543',
-    tags: ['Lupus Eritematoso', 'Lupus']
+    tags: ['Lupus Eritematoso', 'Lupus'],
+    // Added missing keywords to satisfy Doctor interface
+    keywords: ['Lupus', 'Autoinmune', 'Inmunología', 'Piel']
   },
   {
     id: 'd3',
@@ -59,6 +63,8 @@ export const INITIAL_DOCTORS: Doctor[] = [
     specialty: 'Especialista en Dolor Crónico y Fibromialgia',
     imageUrl: 'https://res.cloudinary.com/dg4wbuppq/image/upload/v1766029736/doctor3_ddu92o.avif',
     phone: '5552468135',
-    tags: ['Fibromialgia']
+    tags: ['Fibromialgia'],
+    // Added missing keywords to satisfy Doctor interface
+    keywords: ['Fibromialgia', 'Dolor crónico', 'Fatiga', 'Sueño']
   }
 ];
