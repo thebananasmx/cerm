@@ -213,10 +213,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ diseases, doctors }) => {
                     </td>
                     <td className="px-10 py-6">
                       <div className="flex flex-wrap gap-1">
-                        {d.keywords?.slice(0, 3).map((k, i) => (
+                        {(d.keywords || []).slice(0, 3).map((k, i) => (
                           <span key={i} className="bg-mayo-blue/10 text-mayo-accent px-2 py-0.5 rounded text-[8px] font-bold uppercase">{k}</span>
                         ))}
-                        {d.keywords?.length > 3 && <span className="text-[8px] text-mayo-slate font-bold">+{d.keywords.length - 3}</span>}
+                        {(d.keywords || []).length > 3 && <span className="text-[8px] text-mayo-slate font-bold">+{(d.keywords || []).length - 3}</span>}
                       </div>
                     </td>
                     <td className="px-10 py-6 text-right">

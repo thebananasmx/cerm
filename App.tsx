@@ -44,19 +44,11 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center space-x-4 cursor-pointer group" onClick={() => setView('landing')}>
             <div className="flex items-center justify-center">
-              <svg 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="black" 
-                strokeWidth="1.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className="w-10 h-10 transform group-hover:scale-110 transition-transform duration-300"
-              >
-                <path d="M4.8 2.3A2 2 0 0 0 3 4.5V9a6 6 0 0 0 6 6h6a6 6 0 0 0 6-6V4.5a2 2 0 0 0-1.8-2.2M4.8 2.3c.5-.3 1.2-.3 1.7 0M17.5 2.3c.5-.3 1.2-.3 1.7 0" />
-                <path d="M12 15v3a3 3 0 0 0 3 3h4" />
-                <circle cx="20" cy="10" r="2" />
-              </svg>
+              <img 
+                src="https://res.cloudinary.com/dg4wbuppq/image/upload/v1766102403/checkup_9787624_fp356g.png" 
+                alt="CERM Logo" 
+                className="w-10 h-10 object-contain transform group-hover:scale-110 transition-transform duration-300"
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-mayo-dark font-black text-sm uppercase tracking-[0.3em] leading-none mb-1">CERM</span>

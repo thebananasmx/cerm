@@ -39,10 +39,10 @@ export const getMockChatResponse = (step: number) => {
 export const calculateMockResult = (history: Message[], diseases: Disease[]): TriageResult => {
   const userResponses = history
     .filter(m => m.role === 'user')
-    .map(m => m.text.toLowerCase());
+    .map(m => (m.text || "").toLowerCase());
   
   // Si no hay enfermedades en Firebase, usamos un fallback
-  if (diseases.length === 0) {
+  if (!diseases || diseases.length === 0) {
     return {
       condition: "Evaluación General",
       summary: "No se pudieron cargar datos de referencia. Por favor, consulte a un médico.",
@@ -54,12 +54,15 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
   const scores = diseases.map(disease => {
     let score = 0;
     
-    // Unificar síntomas y keywords para la búsqueda
+    // Unificar síntomas y keywords para la búsqueda (Defensa contra campos undefined)
+    const diseaseKeywords = Array.isArray(disease.keywords) ? disease.keywords : [];
+    const diseaseSymptoms = Array.isArray(disease.symptoms) ? disease.symptoms : [];
+    
     const searchTerms = [
-      ...disease.keywords.map(k => k.toLowerCase()),
-      ...disease.symptoms.map(s => s.toLowerCase()),
-      disease.name.toLowerCase()
-    ];
+      ...diseaseKeywords.map(k => k.toLowerCase()),
+      ...diseaseSymptoms.map(s => s.toLowerCase()),
+      (disease.name || "").toLowerCase()
+    ].filter(term => term !== "");
 
     userResponses.forEach(response => {
       searchTerms.forEach(term => {
@@ -76,8 +79,8 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
   // Ordenar por puntuación y obtener la más alta
   const bestMatch = scores.sort((a, b) => b.score - a.score)[0];
 
-  // Si la puntuación es 0, no hay un match claro
-  if (bestMatch.score === 0) {
+  // Si la puntuación es 0 o no hay match, no hay un cuadro claro
+  if (!bestMatch || bestMatch.score === 0) {
     return {
       condition: "Cuadro Clínico Inespecífico",
       summary: "Tus síntomas no coinciden claramente con las patologías de nuestra base de datos actual. Se recomienda valoración profesional.",
@@ -89,7 +92,7 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
 
   return {
     condition: disease.name,
-    summary: `Basado en tus respuestas sobre ${userResponses[0]} y ${userResponses[3]}, presentas indicadores compatibles con ${disease.name}. ${disease.description}`,
+    summary: `Basado en tus respuestas, presentas indicadores compatibles con ${disease.name}. ${disease.description}`,
     urgency: disease.urgency,
     score: bestMatch.score
   };
