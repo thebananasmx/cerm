@@ -30,7 +30,7 @@ export interface TriageResult {
   score?: number;
 }
 
-export type AppView = 'landing' | 'chat' | 'results' | 'admin';
+export type AppView = 'landing' | 'chat' | 'results' | 'admin' | 'doctors_list';
 
 export type ToastType = 'success' | 'error' | 'info';
 

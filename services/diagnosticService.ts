@@ -36,6 +36,9 @@ export const getMockChatResponse = (step: number) => {
   };
 };
 
+/**
+ * Algoritmo de Triaje con Pesos
+ */
 export const calculateMockResult = (history: Message[], diseases: Disease[]): TriageResult => {
   const userResponses = history
     .filter(m => m.role === 'user')
@@ -54,17 +57,17 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
     const diseaseKeywords = Array.isArray(disease.keywords) ? disease.keywords : [];
     const diseaseSymptoms = Array.isArray(disease.symptoms) ? disease.symptoms : [];
     
-    const searchTerms = [
-      ...diseaseKeywords.map(k => k.toLowerCase()),
-      ...diseaseSymptoms.map(s => s.toLowerCase()),
-      (disease.name || "").toLowerCase()
-    ].filter(term => term !== "");
+    const keywords = diseaseKeywords.map(k => k.toLowerCase());
+    const symptoms = diseaseSymptoms.map(s => s.toLowerCase());
 
     userResponses.forEach(response => {
-      searchTerms.forEach(term => {
-        if (response.includes(term) || term.includes(response)) {
-          score += 1;
-        }
+      // Peso 2 para keywords (más específicas)
+      keywords.forEach(kw => {
+        if (response.includes(kw) || kw.includes(response)) score += 2;
+      });
+      // Peso 1 para síntomas (más genéricos)
+      symptoms.forEach(sym => {
+        if (response.includes(sym) || sym.includes(response)) score += 1;
       });
     });
 
@@ -73,7 +76,7 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
 
   const bestMatch = scores.sort((a, b) => b.score - a.score)[0];
 
-  if (!bestMatch || bestMatch.score === 0) {
+  if (!bestMatch || bestMatch.score <= 1) {
     return {
       condition: "Cuadro Clínico Inespecífico",
       summary: "Tus síntomas no coinciden claramente con las patologías de nuestra base de datos actual. Se recomienda valoración profesional.",
@@ -92,7 +95,8 @@ export const calculateMockResult = (history: Message[], diseases: Disease[]): Tr
 };
 
 /**
- * Encuentra al doctor más compatible basándose en el historial de chat y el diagnóstico.
+ * Algoritmo de Selección de Doctor Mejorado
+ * Ahora utiliza el nuevo campo 'keywords' de los doctores para un matching de precisión.
  */
 export const findBestDoctor = (history: Message[], doctors: Doctor[], conditionName: string): Doctor | null => {
   if (!doctors || doctors.length === 0) return null;
@@ -101,22 +105,34 @@ export const findBestDoctor = (history: Message[], doctors: Doctor[], conditionN
     .filter(m => m.role === 'user')
     .map(m => (m.text || "").toLowerCase());
   
-  const searchSpace = [...userResponses, conditionName.toLowerCase()];
+  const targetCondition = conditionName.toLowerCase();
 
   const scores = doctors.map(doc => {
     let score = 0;
-    const docKeywords = Array.isArray(doc.keywords) ? doc.keywords : [];
-    const docTags = Array.isArray(doc.tags) ? doc.tags : [];
     
-    const docTraits = [
-      ...docKeywords.map(k => k.toLowerCase()),
-      ...docTags.map(t => t.toLowerCase()),
-      (doc.specialty || "").toLowerCase()
-    ];
+    // Normalizar datos del doctor
+    const docKeywords = (Array.isArray(doc.keywords) ? doc.keywords : []).map(k => k.toLowerCase());
+    const docTags = (Array.isArray(doc.tags) ? doc.tags : []).map(t => t.toLowerCase());
+    const specialty = (doc.specialty || "").toLowerCase();
 
-    searchSpace.forEach(input => {
-      docTraits.forEach(trait => {
-        if (input.includes(trait) || trait.includes(input)) {
+    // 1. PRIORIDAD MÁXIMA: Match con el diagnóstico detectado (Peso 10)
+    // Si el nombre de la enfermedad está en sus tags o keywords, es el match ideal.
+    if (docTags.some(t => t.includes(targetCondition) || targetCondition.includes(t))) score += 10;
+    if (docKeywords.some(k => k.includes(targetCondition) || targetCondition.includes(k))) score += 10;
+    if (specialty.includes(targetCondition)) score += 5;
+
+    // 2. PRIORIDAD MEDIA: Match con los inputs directos del usuario (Peso 2 por cada coincidencia en keywords)
+    userResponses.forEach(response => {
+      // Las keywords son el factor de decisión de alta precisión añadido recientemente
+      docKeywords.forEach(kw => {
+        if (response.includes(kw) || kw.includes(response)) {
+          score += 2;
+        }
+      });
+
+      // Los tags son descriptores generales
+      docTags.forEach(tag => {
+        if (response.includes(tag) || tag.includes(response)) {
           score += 1;
         }
       });
@@ -125,6 +141,10 @@ export const findBestDoctor = (history: Message[], doctors: Doctor[], conditionN
     return { doc, score };
   });
 
-  // Devolver el que tenga mayor puntuación, o el primero si todos son 0
-  return scores.sort((a, b) => b.score - a.score)[0].doc;
+  // Ordenar por score descendente
+  const sorted = scores.sort((a, b) => b.score - a.score);
+  
+  // Si el mejor score es 0, devolvemos el primer doctor como fallback, 
+  // pero lo ideal es que siempre haya un match por especialidad.
+  return sorted[0].doc;
 };

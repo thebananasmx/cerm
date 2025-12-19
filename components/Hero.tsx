@@ -3,9 +3,10 @@ import React from 'react';
 
 interface HeroProps {
   onStart: () => void;
+  onViewDoctors: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onStart }) => {
+const Hero: React.FC<HeroProps> = ({ onStart, onViewDoctors }) => {
   return (
     <div className="relative overflow-hidden">
       {/* Background Decor */}
@@ -38,7 +39,10 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
           >
             Comenzar Evaluación
           </button>
-          <button className="mayo-btn-pill w-full sm:w-auto px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] border border-mayo-border bg-white hover:bg-mayo-light transition-all">
+          <button 
+            onClick={onViewDoctors}
+            className="mayo-btn-pill w-full sm:w-auto px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] border border-mayo-border bg-white hover:bg-mayo-light transition-all"
+          >
             Ver Especialistas
           </button>
         </div>
