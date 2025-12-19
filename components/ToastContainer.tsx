@@ -28,13 +28,13 @@ const ToastContainer: React.FC = () => {
             pointer-events-auto flex items-start gap-4 p-4 rounded-sm shadow-2xl border-l-4 animate-in slide-in-from-right-full duration-300
             ${toast.type === 'error' ? 'bg-white border-red-600' : 
               toast.type === 'success' ? 'bg-white border-green-600' : 
-              'bg-white border-mayo-blue'}
+              'bg-white border-cerm-green'}
           `}
         >
           <div className={`mt-0.5 ${
             toast.type === 'error' ? 'text-red-600' : 
             toast.type === 'success' ? 'text-green-600' : 
-            'text-mayo-blue'
+            'text-cerm-green'
           }`}>
             {toast.type === 'error' && (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ const ToastContainer: React.FC = () => {
             <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
               {toast.type === 'error' ? 'Error del Sistema' : 'Notificación'}
             </h4>
-            <p className="text-sm text-mayo-dark font-medium leading-snug">
+            <p className="text-sm text-cerm-dark font-medium leading-snug">
               {toast.message}
             </p>
           </div>

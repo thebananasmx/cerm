@@ -58,16 +58,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
     <div className="max-w-5xl mx-auto px-6 py-8 min-h-[calc(100vh-120px)] flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-12 sm:mb-20">
         <div>
-          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-mayo-blue mb-1">Lead Magnet IA</h2>
-          <p className="text-2xl font-bold text-mayo-dark serif-font">Check de Salud Virtual</p>
+          <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-cerm-green mb-1">Lead Magnet IA</h2>
+          <p className="text-2xl font-bold text-cerm-dark serif-font">Check de Salud Virtual</p>
         </div>
-        <div className="flex items-center gap-4 bg-white/50 border border-mayo-border p-4 rounded-2xl">
+        <div className="flex items-center gap-4 bg-white/50 border border-cerm-border p-4 rounded-2xl">
           <div className="flex gap-1">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className={`h-1.5 w-6 sm:w-10 rounded-full transition-all duration-700 ${i <= step ? 'bg-mayo-blue' : 'bg-mayo-border'}`}></div>
+              <div key={i} className={`h-1.5 w-6 sm:w-10 rounded-full transition-all duration-700 ${i <= step ? 'bg-cerm-green' : 'bg-cerm-border'}`}></div>
             ))}
           </div>
-          <span className="text-[10px] font-black text-mayo-dark/40 uppercase">{step + 1}/6</span>
+          <span className="text-[10px] font-black text-cerm-dark/40 uppercase">{step + 1}/6</span>
         </div>
       </div>
 
@@ -77,20 +77,20 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onComplete, diseases }) =
             const isModel = msg.role === 'model';
             return (
               <div key={idx} className={`flex ${isModel ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
-                <div className={`${isModel ? 'text-2xl sm:text-4xl font-bold serif-font text-mayo-dark' : 'text-xl sm:text-2xl text-mayo-blue font-bold italic'}`}>
+                <div className={`${isModel ? 'text-2xl sm:text-4xl font-bold serif-font text-cerm-dark' : 'text-xl sm:text-2xl text-cerm-green font-bold italic'}`}>
                   {msg.text}
                 </div>
               </div>
             );
           })}
-          {isTyping && <div className="text-mayo-blue text-xs font-black uppercase tracking-widest animate-pulse">Analizando respuesta...</div>}
+          {isTyping && <div className="text-cerm-green text-xs font-black uppercase tracking-widest animate-pulse">Analizando respuesta...</div>}
         </div>
 
         {!isTyping && options.length > 0 && (
-          <div className="mt-auto grid grid-cols-1 sm:grid-cols-2 gap-4 py-8 border-t border-mayo-border">
+          <div className="mt-auto grid grid-cols-1 sm:grid-cols-2 gap-4 py-8 border-t border-cerm-border">
             {options.map((opt, i) => (
-              <button key={i} onClick={() => handleOptionSelect(opt)} className="group flex items-center justify-between p-6 bg-white border border-mayo-border rounded-2xl hover:border-mayo-blue transition-all text-left shadow-sm hover:shadow-premium">
-                <span className="text-lg font-bold text-mayo-dark group-hover:text-mayo-blue">{opt}</span>
+              <button key={i} onClick={() => handleOptionSelect(opt)} className="group flex items-center justify-between p-6 bg-white border border-cerm-border rounded-2xl hover:border-cerm-green transition-all text-left shadow-sm hover:shadow-premium">
+                <span className="text-lg font-bold text-cerm-dark group-hover:text-cerm-green">{opt}</span>
               </button>
             ))}
           </div>

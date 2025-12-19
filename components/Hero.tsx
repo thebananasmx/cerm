@@ -11,37 +11,37 @@ const Hero: React.FC<HeroProps> = ({ onStart, onViewDoctors }) => {
     <div className="relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-mayo-blue/5 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-mayo-dark/5 rounded-full blur-[100px]"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cerm-green/5 rounded-full blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-cerm-dark/5 rounded-full blur-[100px]"></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-20 sm:py-32 text-center">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-mayo-blue/10 border border-mayo-blue/20 rounded-full mb-8">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-cerm-green/10 border border-cerm-green/20 rounded-full mb-8">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mayo-blue opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-mayo-blue"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cerm-green opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-cerm-green"></span>
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-mayo-accent">Nueva Generación de Diagnóstico IA</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-cerm-accent">Nueva Generación de Diagnóstico IA</span>
         </div>
 
-        <h1 className="text-5xl sm:text-8xl font-bold text-mayo-dark tracking-tighter mb-8 serif-font leading-[0.9] max-w-5xl mx-auto">
-          El futuro de la salud <span className="italic text-mayo-blue">reumatológica</span> es ahora.
+        <h1 className="text-5xl sm:text-8xl font-bold text-cerm-dark tracking-tighter mb-8 serif-font leading-[0.9] max-w-5xl mx-auto">
+          El futuro de la salud <span className="italic text-cerm-green">reumatológica</span> es ahora.
         </h1>
         
-        <p className="text-lg sm:text-xl text-mayo-slate max-w-2xl mx-auto leading-relaxed mb-12 font-medium">
+        <p className="text-lg sm:text-xl text-cerm-slate max-w-2xl mx-auto leading-relaxed mb-12 font-medium">
           Evaluaciones instantáneas impulsadas por inteligencia artificial de grado médico para detectar condiciones autoinmunes antes que nunca.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onStart}
-            className="mayo-btn-pill w-full sm:w-auto bg-mayo-blue text-white px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] hover:bg-mayo-dark hover:shadow-premium transition-all active:scale-95"
+            className="cerm-btn-pill w-full sm:w-auto bg-cerm-green text-white px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] hover:bg-cerm-dark hover:shadow-premium transition-all active:scale-95"
           >
             Comenzar Evaluación
           </button>
           <button 
             onClick={onViewDoctors}
-            className="mayo-btn-pill w-full sm:w-auto px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] border border-mayo-border bg-white hover:bg-mayo-light transition-all"
+            className="cerm-btn-pill w-full sm:w-auto px-12 py-5 text-lg font-bold uppercase tracking-[0.15em] border border-cerm-border bg-white hover:bg-cerm-light transition-all"
           >
             Ver Especialistas
           </button>
@@ -56,13 +56,13 @@ const Hero: React.FC<HeroProps> = ({ onStart, onViewDoctors }) => {
             { title: "Privacidad Total", icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" }
           ].map((feature, i) => (
             <div key={i} className="glass-effect p-8 rounded-2xl shadow-glass hover:shadow-premium transition-all duration-500">
-              <div className="w-12 h-12 bg-mayo-blue/10 rounded-xl flex items-center justify-center text-mayo-blue mb-6">
+              <div className="w-12 h-12 bg-cerm-green/10 rounded-xl flex items-center justify-center text-cerm-green mb-6">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={feature.icon} />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-mayo-dark serif-font mb-2">{feature.title}</h3>
-              <p className="text-sm text-mayo-slate">Protección y precisión de datos nivel hospitalario.</p>
+              <h3 className="text-xl font-bold text-cerm-dark serif-font mb-2">{feature.title}</h3>
+              <p className="text-sm text-cerm-slate">Protección y precisión de datos nivel hospitalario.</p>
             </div>
           ))}
         </div>
